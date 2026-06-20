@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+*.db
+.drift-state
+logs/
+markers/
+scripts/.prior-statusline
+*.bak.*
+*.drift-bak.*
+.dd.*
+# eval outputs
+eval_history.json
+eval_run_*.json
+EVAL_REPORT.md
+MORIN_EVAL_REPORT.md
+FINAL_5LAP_REPORT.md
+# mkdocs build
+site/

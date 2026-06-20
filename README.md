@@ -1,10 +1,15 @@
+<div align="center">
+
 # Drift Detector
 
 Catch the moment Claude stops following your output contract — and pull it back.
 
-[![CI](https://img.shields.io/badge/CI-validate__plugin-blue)](.ci/validate_plugin.py)
-[![version](https://img.shields.io/badge/version-1.3.0-informational)](plugin.json)
-[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![plugin-validate](https://github.com/88plug/drift-detector/actions/workflows/plugin-validate.yml/badge.svg)](https://github.com/88plug/drift-detector/actions/workflows/plugin-validate.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-online-blue?style=flat)](https://88plug.github.io/drift-detector)
+[![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2?style=flat)](https://github.com/88plug/claude-code-plugins)
+
+</div>
 
 Drift Detector scores every assistant turn for how far it has wandered from the
 contract you set — a terse persona, hard length/format rules, an in-character
@@ -20,8 +25,7 @@ reliability.
 /plugin install drift-detector@drift-detector
 ```
 
-Then enable the status-line badge (the one piece a plugin manifest can't
-auto-wire):
+Then enable the status-line badge (the one piece a plugin manifest can't auto-wire):
 
 ```bash
 bash "$(/plugin path drift-detector)/install.sh"
@@ -80,10 +84,10 @@ nagging every turn.
 ## How it works
 
 `SessionStart` initializes writable state. `Stop` tails the transcript, scores
-the last assistant turn (`scripts/score.py` → `src/lib/drift_score.py`),
-persists to a WAL-mode SQLite index, writes the badge, and drops a marker if the
-turn drifted. The next `UserPromptSubmit` consumes that marker and injects a
-short correction. A read-only MCP server exposes the state to the model.
+the last assistant turn (`src/lib/drift_score.py`), persists to a WAL-mode SQLite
+index, writes the badge, and drops a marker if the turn drifted. The next
+`UserPromptSubmit` consumes that marker and injects a short correction. A
+read-only MCP server exposes the state to the model.
 
 The point engine answers "how bad is *this* turn?" with a single number. But a
 snapshot lies about dynamics, so a trajectory layer (`src/lib/drift_trajectory.py`)

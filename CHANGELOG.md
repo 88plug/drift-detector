@@ -1,0 +1,30 @@
+# Changelog
+
+## 1.3.0
+
+- Engine tuned through 10 scientific-method laps against a 170-session labeled corpus.
+- Final eval: 100% accuracy, 0.0% false-positive rate.
+- Added severity-spike override: scores ≥ 1.35× threshold always degenerative.
+- Added consistently-high subclinical detector (narrow-band near-threshold pattern).
+- Added repeating-spike-degenerate flag and wired into trajectory pipeline — bypasses
+  the adaptive gate for sessions with ≥ 3 threshold crossings or ≥ 2 crossings +
+  ≥ 4 high-subclinical turns in long sessions.
+- Added register-gated short-session emerging-drift alarm (wps + word_count gate).
+- Added ordinal-enumeration phrases ("First, the", "Second, it", "in order to") to
+  filler lexicon.
+- 13 pytest tests (8 engine + 5 new-feature coverage).
+- 56 CI validation checks.
+
+## 1.0.0
+
+- Initial release: deterministic drift scoring engine (`drift_score.py`).
+- Edgar Morin trajectory module (`drift_trajectory.py`): velocity, adaptive vs
+  degenerative classification, chronic subclinical detection, EWMA session score.
+- Self-calibrating baseline (`drift_calibrate.py`).
+- Dialogic two-coordinate badge (`drift_dialogic.py`).
+- Low-gain proportional controller with cooldown (`drift_controller.py`).
+- Hooks: SessionStart, Stop (scoring + badge), UserPromptSubmit (correction inject).
+- MCP server: `drift_status`, `drift_recent`, `drift_explain`.
+- Commands: `/drift:status`, `report`, `profile`, `reset`, `debug`.
+- Profiles: `caveman`, `strict-instructions`, `persona`.
+- 40-session labeled eval corpus, F1 = 1.0 per-turn, 100% session accuracy.
