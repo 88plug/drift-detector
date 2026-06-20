@@ -5,8 +5,8 @@
 A Claude Code plugin that scores every assistant turn for behavioral drift from your active output contract and steers it back automatically.
 
 [![plugin-validate](https://github.com/88plug/drift-detector/actions/workflows/plugin-validate.yml/badge.svg)](https://github.com/88plug/drift-detector/actions/workflows/plugin-validate.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat)](../LICENSE)
-[![Version](https://img.shields.io/badge/version-1.3.0-green?style=flat)](../CHANGELOG.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat)](https://github.com/88plug/drift-detector/blob/master/LICENSE)
+[![Version](https://img.shields.io/badge/version-1.3.0-green?style=flat)](https://github.com/88plug/drift-detector/blob/master/CHANGELOG.md)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2?style=flat)](https://github.com/88plug/claude-code-plugins)
 
 </div>
@@ -72,4 +72,4 @@ See `EXPERIMENTS.md` for the full 10-lap scientific-method tuning ledger.
 
 ## License
 
-[MIT](../LICENSE) © 2026 88plug
+[MIT](https://github.com/88plug/drift-detector/blob/master/LICENSE) © 2026 88plug
