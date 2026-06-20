@@ -8,6 +8,7 @@ A Claude Code plugin that scores every assistant turn for behavioral drift from 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat)](https://github.com/88plug/drift-detector/blob/master/LICENSE)
 [![Version](https://img.shields.io/badge/version-1.3.0-green?style=flat)](https://github.com/88plug/drift-detector/blob/master/CHANGELOG.md)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2?style=flat)](https://github.com/88plug/claude-code-plugins)
+[![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/88plug/drift-detector)
 
 </div>
 

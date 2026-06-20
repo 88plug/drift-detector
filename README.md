@@ -8,6 +8,7 @@ Catch the moment Claude stops following your output contract — and pull it bac
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-online-blue?style=flat)](https://88plug.github.io/drift-detector)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2?style=flat)](https://github.com/88plug/claude-code-plugins)
+[![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/88plug/drift-detector)
 
 </div>
 
