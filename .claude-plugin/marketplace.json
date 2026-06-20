@@ -1,0 +1,32 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "drift-detector",
+  "description": "Drift Detector for Claude Code — per-turn behavioral drift scoring, live badge, and automatic correction nudges.",
+  "owner": {
+    "name": "88plug",
+    "email": "andrew@88plug.com"
+  },
+  "plugins": [
+    {
+      "name": "drift-detector",
+      "source": ".",
+      "displayName": "Drift Detector",
+      "description": "Detects when Claude drifts from your output contract (persona, format, length rules) and steers it back. Deterministic scoring engine, live statusline badge, one-shot correction nudge. 170-session eval: 100% accuracy, FP=0.",
+      "author": {
+        "name": "88plug",
+        "email": "andrew@88plug.com"
+      },
+      "homepage": "https://github.com/88plug/drift-detector",
+      "license": "MIT",
+      "category": "productivity",
+      "tags": [
+        "type:plugin",
+        "drift-detection",
+        "guardrails",
+        "instruction-following",
+        "llm-monitoring",
+        "persona"
+      ]
+    }
+  ]
+}

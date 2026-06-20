@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "drift-detector",
+  "displayName": "Drift Detector",
+  "description": "Detects when Claude drifts away from your active output contract (a terse persona, hard formatting/length rules, an in-character voice) and quietly steers it back. Deterministic per-turn scoring, live status-line badge, one-shot correction nudge. 170-session eval corpus: 100% accuracy, 0.0% false-positive rate.",
+  "author": {
+    "name": "88plug",
+    "email": "andrew@88plug.com"
+  },
+  "homepage": "https://github.com/88plug/drift-detector",
+  "repository": "https://github.com/88plug/drift-detector.git",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "claude",
+    "anthropic",
+    "ai",
+    "llm",
+    "ai-agents",
+    "developer-tools",
+    "productivity",
+    "automation",
+    "cli",
+    "claude-code-plugin",
+    "claude-skills",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "drift-detection",
+    "guardrails",
+    "instruction-following",
+    "llm-monitoring",
+    "persona"
+  ]
+}

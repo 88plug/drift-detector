@@ -1,0 +1,18 @@
+{
+  "name": "drift-detector",
+  "source": {
+    "source": "github",
+    "repo": "88plug/drift-detector"
+  },
+  "description": "Detects when Claude drifts from your output contract (persona, format, length rules) and steers it back. Deterministic scoring engine, live statusline badge, one-shot correction nudge. 170-session eval: 100% accuracy, FP=0.",
+  "category": "productivity",
+  "tags": [
+    "type:plugin",
+    "drift-detection",
+    "guardrails",
+    "instruction-following",
+    "llm-monitoring",
+    "persona"
+  ],
+  "homepage": "https://github.com/88plug/drift-detector"
+}
