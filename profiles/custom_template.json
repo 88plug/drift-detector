@@ -1,0 +1,55 @@
+{
+  "_comment": "Copy this file and edit it to build your own drift profile. JSON has no real comment syntax, so the docs live in _comment* keys, which the engine ignores. Every field below is optional: omit any and the engine substitutes a safe default (the values shown are the defaults). Numeric fields are clamped to the ranges noted.",
+
+  "_comment_name": "Short label for this profile (max 64 chars). Shows up in scores and the status line.",
+  "name": "custom",
+
+  "_comment_kind": "'lexical' uses this stdlib engine. 'judge' is reserved for an LLM-based scorer handled elsewhere; leave as 'lexical' unless you know you want that.",
+  "kind": "lexical",
+
+  "_comment_description": "Free-text note about what this profile enforces. Documentation only; not used in scoring.",
+  "description": "Describe what behavioral contract this profile enforces.",
+
+  "_comment_threshold": "0..100. A turn is flagged 'drift' when its score is >= threshold, else 'ok'. Lower = stricter.",
+  "threshold": 70,
+
+  "_comment_sensitivity": "0.1..3.0. Linear multiplier on the final score before clamping. 1.0 = neutral, >1 = twitchier, <1 = calmer.",
+  "sensitivity": 1.0,
+
+  "_comment_weights": "Relative importance of each scoring component. Weights are relative (the max weight defines the scale), not a budget. Set a weight to 0 to disable that component. The lexical classes (hedges/filler/hype/meta) measure marker density; verbosity = words-per-sentence pressure; length = absolute prose length; complexity = long-word ratio.",
+  "weights": {
+    "hedges": 1.0,
+    "filler": 1.0,
+    "hype": 1.5,
+    "meta": 1.2,
+    "verbosity": 1.0,
+    "length": 0.8,
+    "complexity": 0.7
+  },
+
+  "_comment_lexicons": "Optional. Override marker word/phrase lists per class. If you provide a class here it FULLY REPLACES the engine default for that class (it is not merged). Multi-word entries are matched as phrases; single words are matched as tokens. Omit this whole object to use the built-in defaults.",
+  "lexicons": {
+    "hedges": ["perhaps", "maybe", "i think", "it seems"],
+    "filler": ["certainly", "of course", "happy to help"],
+    "hype": ["seamless", "powerful", "robust"],
+    "meta": ["let me explain", "step by step", "in summary"]
+  },
+
+  "_comment_target_wps": "1..100. Sentences at/under this words-per-sentence contribute no verbosity pressure.",
+  "target_wps": 8.0,
+
+  "_comment_max_wps": "2..200. Words-per-sentence where the verbosity component saturates at full.",
+  "max_wps": 28.0,
+
+  "_comment_target_words": "1..5000. Prose word count under this is free (no length pressure).",
+  "target_words": 40.0,
+
+  "_comment_max_words": "2..100000. Prose word count where the length component saturates.",
+  "max_words": 400.0,
+
+  "_comment_long_word_len": "4..40. A token this many characters or longer counts as a 'long word' for the complexity component.",
+  "long_word_len": 9,
+
+  "_comment_max_long_ratio": "0.01..1.0. Fraction of long words at which the complexity component saturates.",
+  "max_long_ratio": 0.30
+}

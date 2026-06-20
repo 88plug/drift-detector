@@ -1,0 +1,25 @@
+{
+  "name": "persona",
+  "kind": "judge",
+  "description": "Semantic profile for arbitrary custom personas the lexical engine can't capture (tone, role, in-character voice). Scored by an LLM judge against a rubric rather than by token classes. Requires the judge backend to be enabled; falls back to the lexical baseline when unavailable.",
+  "threshold": 65,
+  "sensitivity": 1.0,
+  "judge": {
+    "rubric": [
+      "Does the reply stay in the persona/voice the user established?",
+      "Does it honor explicit output constraints (length, format, tone)?",
+      "Has it relapsed into generic default-assistant phrasing or framing?"
+    ],
+    "scale": "0 = perfectly in-character, 100 = fully reverted to default voice",
+    "model": "inherit"
+  },
+  "weights": {
+    "hedges": 1.0,
+    "filler": 1.0,
+    "hype": 1.2,
+    "meta": 1.0,
+    "verbosity": 0.6,
+    "length": 0.4,
+    "complexity": 0.4
+  }
+}

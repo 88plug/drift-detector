@@ -1,0 +1,21 @@
+{
+  "name": "strict-instructions",
+  "extends": "caveman",
+  "kind": "lexical",
+  "description": "Tighter variant for sessions where the user gave hard output constraints (length caps, no preamble, no hedging). Lower threshold + higher sensitivity catch drift earlier.",
+  "threshold": 55,
+  "sensitivity": 1.4,
+  "weights": {
+    "hedges": 1.5,
+    "filler": 1.5,
+    "hype": 1.5,
+    "meta": 1.5,
+    "verbosity": 1.2,
+    "length": 1.0,
+    "complexity": 0.7
+  },
+  "target_wps": 6.0,
+  "max_wps": 22.0,
+  "target_words": 25.0,
+  "max_words": 250.0
+}

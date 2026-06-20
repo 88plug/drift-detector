@@ -1,0 +1,22 @@
+{
+  "name": "strict",
+  "kind": "lexical",
+  "description": "Aggressive enforcement. Low threshold and high sensitivity catch drift early, before a turn fully relapses into default-assistant prose.",
+  "threshold": 50,
+  "sensitivity": 1.5,
+  "weights": {
+    "hedges": 1.0,
+    "filler": 1.0,
+    "hype": 1.5,
+    "meta": 1.2,
+    "verbosity": 1.0,
+    "length": 0.8,
+    "complexity": 0.7
+  },
+  "target_wps": 8.0,
+  "max_wps": 28.0,
+  "target_words": 40.0,
+  "max_words": 400.0,
+  "long_word_len": 9,
+  "max_long_ratio": 0.30
+}
