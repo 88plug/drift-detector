@@ -61,26 +61,33 @@ def all_json_parse():
                     ok(f"json parses: {rel}")
 
 
-def check_manifest(rel):
+def check_manifest(rel, discovery=False):
+    """Check a plugin manifest.
+
+    discovery=True: .claude-plugin/plugin.json is a marketplace-discovery manifest —
+    it carries name/description/keywords but no runtime fields (version, hooks).
+    """
     data = load_json(rel)
     if data is None:
         return
-    for field in ("name", "version", "description"):
+    required = ("name", "description") if discovery else ("name", "version", "description")
+    for field in required:
         if not data.get(field):
             fail(f"{rel}: missing required field '{field}'")
     if data.get("name") and data["name"] != "drift-detector":
         fail(f"{rel}: name must be 'drift-detector'")
-    hooks = data.get("hooks")
-    if isinstance(hooks, str):
-        hp = os.path.join(ROOT, hooks.lstrip("./"))
-        if not os.path.isfile(hp):
-            fail(f"{rel}: hooks path not found: {hooks}")
+    if not discovery:
+        hooks = data.get("hooks")
+        if isinstance(hooks, str):
+            hp = os.path.join(ROOT, hooks.lstrip("./"))
+            if not os.path.isfile(hp):
+                fail(f"{rel}: hooks path not found: {hooks}")
+            else:
+                check_hooks_obj(load_json(os.path.relpath(hp, ROOT)), rel)
+        elif isinstance(hooks, dict):
+            check_hooks_obj({"hooks": hooks}, rel)
         else:
-            check_hooks_obj(load_json(os.path.relpath(hp, ROOT)), rel)
-    elif isinstance(hooks, dict):
-        check_hooks_obj({"hooks": hooks}, rel)
-    else:
-        fail(f"{rel}: missing or malformed hooks")
+            fail(f"{rel}: missing or malformed hooks")
     ok(f"manifest ok: {rel}")
 
 
@@ -233,7 +240,7 @@ def main():
     print("== drift-detector plugin validation ==")
     all_json_parse()
     check_manifest("plugin.json")
-    check_manifest(".claude-plugin/plugin.json")
+    check_manifest(".claude-plugin/plugin.json", discovery=True)
     check_marketplace()
     check_commands()
     check_skill()
