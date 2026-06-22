@@ -142,4 +142,47 @@ else
   rm -f "${OFF_FILE}" 2>/dev/null || true
 fi
 
+# --- Auto-calibrate CLAUDE.md every 10 cumulative drift turns -------------- #
+# If we're in a project with a writable CLAUDE.md (or we can create one), and
+# the project has accumulated at least 10 drift turns total, regenerate the
+# anti-drift guidance block. This is best-effort and never breaks the session.
+_maybe_calibrate() {
+  [ -n "${PY}" ]               || return 0
+  [ -n "${CLAUDE_PROJECT_DIR:-}" ] || return 0
+  [ -d "${CLAUDE_PROJECT_DIR}" ]   || return 0
+
+  local target="${CLAUDE_PROJECT_DIR}/CLAUDE.md"
+  local update_py="${CLAUDE_PLUGIN_ROOT}/scripts/update_guidance.py"
+  [ -f "${update_py}" ] || return 0
+
+  # Count cumulative drift turns for this project directory (all sessions).
+  local total_drift
+  total_drift="$(${PY} -c "
+import sqlite3, sys
+try:
+    con = sqlite3.connect('file:${DD_DB}?mode=ro', uri=True)
+    row = con.execute('SELECT SUM(drift_turns) FROM sessions').fetchone()
+    print(int(row[0] or 0))
+    con.close()
+except Exception:
+    print(0)
+" 2>/dev/null)"
+  total_drift="${total_drift:-0}"
+  case "${total_drift}" in (*[!0-9]*|"") total_drift=0;; esac
+
+  # Fire on every 10th drift turn (0, 10, 20, …). Skip if < 10.
+  [ "${total_drift}" -ge 10 ] || return 0
+  local rem=$(( total_drift % 10 ))
+  [ "${rem}" -eq 0 ] || return 0
+
+  ${PY} "${update_py}" \
+    --db "${DD_DB}" \
+    --output "${target}" \
+    --sessions 50 \
+    --min-drift-turns 5 \
+    >> "${DD_LOGS_DIR}/calibrate.log" 2>&1 || true
+  dd_log_debug "calibration triggered at drift_turns=${total_drift} → ${target}"
+}
+_maybe_calibrate
+
 exit 0

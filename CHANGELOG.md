@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.0
+
+- Auto-calibration: `scripts/update_guidance.py` analyses the drift DB and
+  writes a data-driven anti-drift block to the project's `CLAUDE.md` between
+  `<!-- drift-detector:start -->` / `<!-- drift-detector:end -->` markers.
+- Stop hook now triggers calibration every 10 cumulative drift turns per project.
+- New command `/drift-detector:calibrate` for manual on-demand regeneration.
+
 ## 1.3.0
 
 - Engine tuned through 10 scientific-method laps against a 170-session labeled corpus.
