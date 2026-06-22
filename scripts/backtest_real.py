@@ -78,6 +78,26 @@ _SYSTEM_PFX_RE = _re.compile(r'^\s*(Diagnose:|job_id:)', _re.I)
 _CHECK_SHORT_RE = _re.compile(r'^\s*check(?:\s+\S+){0,2}\s*$', _re.I)
 
 
+def _correction_rate_k(sess_bursts_by_session: dict, entry: dict, k: int = 3) -> float:
+    """Fraction of the k most-recent prior bursts whose following_user_prompt was a correction."""
+    if _classify_reply is None:
+        return 0.0
+    s    = entry.get("session_id", "")
+    bidx = entry.get("burst_index", -1)
+    priors = sorted(
+        [(bi, e) for bi, e in sess_bursts_by_session.get(s, []) if bi < bidx],
+        reverse=True,
+    )[:k]
+    if not priors:
+        return 0.0
+    corr_count = sum(
+        1 for _, e in priors
+        if _classify_reply(e.get("following_user_prompt") or "")
+           not in ("new_task", "approval", "continuation")
+    )
+    return corr_count / len(priors)
+
+
 def _score_turns(turns, profile):
     scores   = [ds.score_text(t, profile)["score"] for t in turns]
     register = [
@@ -88,7 +108,8 @@ def _score_turns(turns, profile):
     return scores, register
 
 
-def _predict(turns, profile, calibrate: bool, following_user_prompt: str = ""):
+def _predict(turns, profile, calibrate: bool, following_user_prompt: str = "",
+             session_correction_rate: float = 0.0):
     if calibrate and dc is not None and len(turns) >= 2:
         cal      = dc.estimate_baseline_from_turns(turns[:2])
         prof     = dc.apply_calibration(profile, cal)
@@ -137,10 +158,11 @@ def _predict(turns, profile, calibrate: bool, following_user_prompt: str = ""):
         ):
             predicted = False
         elif next_subtype == "new_task":
-            # R14b: following prompt is a new task (not a correction) — user
-            # moved on, burst was accepted. All surviving FPs at R13 have
-            # next=new_task; TP cost is 149 but 85% are caught at burst N+1.
-            predicted = False
+            # R15: suppress unless user is in heavy-correction mode (>50% of last 3
+            # bursts were corrections). High correction rate means the "new task"
+            # may mask frustration-driven acceptance rather than genuine task-switch.
+            if session_correction_rate <= 0.50:
+                predicted = False
     reasoning = (
         f"scores={[round(x, 1) for x in scores]} vel={vel:+.1f} "
         f"adaptive={adaptive} sess_score={sess['session_score']} "
@@ -185,6 +207,13 @@ def main():
     if args.window is not None:
         corpus = [e for e in corpus if e.get("correction_window") == args.window]
 
+    # Build session burst index for correction-rate computation (R15)
+    _sess_bursts: dict = {}
+    for e in corpus:
+        s = e.get("session_id", "")
+        if s:
+            _sess_bursts.setdefault(s, []).append((e.get("burst_index", -1), e))
+
     # Score each labeled burst
     results      = []
     disagreements = []
@@ -201,8 +230,10 @@ def main():
             continue
 
         following = entry.get("following_user_prompt") or ""
+        sess_rate = _correction_rate_k(_sess_bursts, entry, k=3)
         predicted, reasoning = _predict(turns, profile, args.calibrate,
-                                        following_user_prompt=following)
+                                        following_user_prompt=following,
+                                        session_correction_rate=sess_rate)
         correct = (predicted == expected)
 
         row = {
