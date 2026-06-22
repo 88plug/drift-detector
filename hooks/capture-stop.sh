@@ -157,10 +157,11 @@ _maybe_calibrate() {
 
   # Count cumulative drift turns for this project directory (all sessions).
   local total_drift
-  total_drift="$(${PY} -c "
-import sqlite3, sys
+  total_drift="$(DD_DB_PATH="${DD_DB}" ${PY} -c "
+import sqlite3, os
+db = os.environ.get('DD_DB_PATH', '')
 try:
-    con = sqlite3.connect('file:${DD_DB}?mode=ro', uri=True)
+    con = sqlite3.connect('file:' + db + '?mode=ro', uri=True)
     row = con.execute('SELECT SUM(drift_turns) FROM sessions').fetchone()
     print(int(row[0] or 0))
     con.close()
