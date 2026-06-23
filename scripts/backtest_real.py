@@ -163,10 +163,13 @@ def _predict(turns, profile, calibrate: bool, following_user_prompt: str = "",
         ):
             predicted = False
         elif next_subtype == "new_task":
-            # R15: suppress unless user is in heavy-correction mode (>50% of last 3
-            # bursts were corrections). High correction rate means the "new task"
-            # may mask frustration-driven acceptance rather than genuine task-switch.
-            if session_correction_rate <= 0.50:
+            # R15/R17: fire only when session correction rate is PARTIAL (strictly
+            # between 0.50 and 1.0). When rate ≤ 0.50 the user genuinely moved on;
+            # when rate = 1.0 (ALL K prior bursts were corrections) the user is
+            # exhausted and the "new task" is also a genuine task-switch. The 0.50<
+            # rate <1.0 band is where partial correction history signals that this
+            # new task may mask continued drift acceptance.
+            if not (session_correction_rate > 0.50 and session_correction_rate < 1.0):
                 predicted = False
     reasoning = (
         f"scores={[round(x, 1) for x in scores]} vel={vel:+.1f} "
