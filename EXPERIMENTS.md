@@ -197,7 +197,8 @@ Labels derived from W=2 user-correction window. Synthetic FP=0.0 invariant enfor
 | R13 | 0.4931 | 0.3653 | 0.7586 | 286 | 497 | 91 | 409 | H1+H6+H4+H2: fan/spin, check-short, keep, system-prefix suppress |
 | ~~R14~~ | ~~0.5842~~ | ~~0.6667~~ | ~~0.5199~~ | ~~196~~ | ~~98~~ | ~~181~~ | ~~808~~ | ~~H_PREV1_OK_NEWTASK: prev_burst_ok + new_task gate~~ — **RETRACTED: W=2 leakage** |
 | R14b | 0.5331 | 1.0000 | 0.3634 | 137 | 0 | 240 | 906 | H_PURE_NEWTASK: suppress when next_subtype=new_task (inference-safe) |
-| R15 | **0.5402** | **0.8655** | **0.3926** | **148** | **23** | **229** | **883** | **H_SESS_CORR_K3: un-suppress new_task when session correction rate K=3 > 0.50** |
+| R15 | 0.5402 | 0.8655 | 0.3926 | 148 | 23 | 229 | 883 | H_SESS_CORR_K3: un-suppress new_task when session correction rate K=3 > 0.50 |
+| R16 | **0.5774** | **0.8586** | **0.4350** | **164** | **27** | **213** | **879** | **H_PEAK_SCORE: peak-score gate — fire if any turn in burst ≥ threshold** |
 
 ## R13 detail (2026-06-22)
 
@@ -451,6 +452,69 @@ all prior `following_user_prompt` values are received before the current burst f
 | F1 > 0.5331 and all guardrails pass | PASS — ship as R15 |
 | F1 ≤ 0.5331 or any guardrail fails | KILL — file as DO-NOT-RE-ATTACK |
 | fp > 50 | KILL — too many false alerts, precision-sensitive product |
+
+---
+
+## Round 6 — Peak-score gate (2026-06-22)
+
+**Baseline:** R15 — F1=0.5402, p=0.8655, r=0.3926, tp=148, fp=23, fn=229, tn=883
+
+**Pre-registered hypothesis (H_PEAK_SCORE, 2026-06-22):**
+
+`classify_drift` only inspects `scores[-1]` (last assistant turn). Bursts where
+drift peaked mid-burst then tailed clean ("tail-escape") are missed: max(scores) ≥
+threshold but last < threshold, so engine sees a clean final turn and doesn't fire.
+Adding `or max(scores) >= threshold` to the prediction condition catches these.
+Isolated-spike false-alert risk is handled downstream by the existing approval /
+new_task / correction-rate suppression chain — the gate doesn't add FPs for bursts
+where the user genuinely moved on.
+
+**Mechanism (pre-registered):**
+```python
+predicted = (
+    cls.should_correct
+    or (len(scores) >= 2 and sess["is_degenerative"] and not adaptive)
+    or sess.get("repeating_spike_degenerate", False)
+    or max(scores) >= thr   # R16: peak-score gate
+)
+```
+
+**Acceptance criteria:** F1 > 0.5402, p > 0.50, r > 0.35, synthetic FP=0.0
+
+**Predicted:** F1=0.5775 (+0.037), tp=164, fp=27 (from simulation)
+
+| Outcome | Conclusion |
+|---------|-----------|
+| F1 > 0.5402 and guardrails pass | PASS — ship as R16 |
+| F1 ≤ 0.5402 or p < 0.50 | KILL — peak gate adding FPs faster than TPs |
+| synthetic FP > 0.0 | KILL — breaks invariant |
+
+## R16 applied (2026-06-22)
+
+**Official results:** F1=0.5774, p=0.8586, r=0.4350, tp=164, fp=27, fn=213, tn=879
+**Synthetic:** n=170, acc=1.0, FP=0.0 ✓
+
+**Why it works:**
+- 47 tail-escape FNs had max(scores)≥50 but last<50 — engine was blind to peak
+- Peak gate fires on them; suppression chain filters the "user moved on" cases
+- Net: +16 TP, +4 FP over R15 — highest single-round F1 gain since R10
+
+**Reproduce:**
+```bash
+cd ~/drift-detector
+python3 scripts/backtest_real.py 2>/dev/null | python3 -c "
+import json,sys; d=json.load(sys.stdin); cm=d['confusion_matrix']
+print(f'F1={d[\"f1\"]} p={d[\"precision\"]} r={d[\"recall\"]}')
+print(f'tp={cm[\"tp\"]} fp={cm[\"fp\"]} fn={cm[\"fn\"]} tn={cm[\"tn\"]}')
+"
+# Expected: F1=0.5774 p=0.8586 r=0.4350 tp=164 fp=27 fn=213 tn=879
+
+python3 scripts/eval_morin.py 2>/dev/null | python3 -c "
+import json,sys; d=json.load(sys.stdin)
+print(f'n={d[\"n\"]} acc={d[\"accuracy\"]} FP={d[\"false_positive_rate\"]}')
+"
+# Expected: n=170 acc=1.0 FP=0.0
+```
 
 ## R15 applied (2026-06-22)
 

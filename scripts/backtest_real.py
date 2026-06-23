@@ -129,10 +129,15 @@ def _predict(turns, profile, calibrate: bool, following_user_prompt: str = "",
     # The degenerative branch requires at least 2 turns — with a single turn
     # drift_rate=1.0 and max_streak=1 trivially satisfy it, causing FPs.
     # cls.should_correct uses threshold-based logic valid for any turn count.
+    # R16: peak-score gate — if any turn in the burst reached threshold, the
+    # burst drifted regardless of whether the last turn happened to clean up
+    # (tail-escape recovery). Isolated-spike protection is handled downstream
+    # by the approval/new_task/correction-rate suppression chain.
     predicted = (
         cls.should_correct
         or (len(scores) >= 2 and sess["is_degenerative"] and not adaptive)
         or sess.get("repeating_spike_degenerate", False)
+        or max(scores) >= thr
     )
 
     # FP suppression: if the immediately following user prompt is an explicit
