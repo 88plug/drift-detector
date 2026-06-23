@@ -8,6 +8,8 @@ scripts/.prior-statusline
 *.bak.*
 *.drift-bak.*
 .dd.*
+# round-specific sweep scripts (campaign artifacts)
+scripts/sweep_r*.py
 # eval outputs
 eval_real_corpus.json
 .real_corpus_manifest.json
