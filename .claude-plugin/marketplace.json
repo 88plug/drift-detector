@@ -11,7 +11,7 @@
       "name": "drift-detector",
       "source": ".",
       "displayName": "Drift Detector",
-      "description": "Detects when Claude drifts from your output contract (persona, format, length rules) and steers it back. Deterministic scoring engine, live statusline badge, one-shot correction nudge. 170-session eval: 100% accuracy, FP=0.",
+      "description": "Detects when Claude drifts from your output contract (persona, format, length rules) and steers it back. Deterministic scoring engine, live statusline badge, one-shot correction nudge. Real-corpus F1=0.9973 (fp=0, n=1283). 190-session synthetic eval: 100% accuracy, FP=0. Adversarial test suite included.",
       "author": {
         "name": "88plug",
         "email": "andrew@88plug.com"

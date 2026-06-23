@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "drift-detector",
   "displayName": "Drift Detector",
-  "description": "Detects when Claude drifts away from your active output contract (a terse persona, hard formatting/length rules, an in-character voice) and quietly steers it back. Deterministic per-turn scoring, live status-line badge, one-shot correction nudge. 170-session eval corpus: 100% accuracy, 0.0% false-positive rate.",
+  "description": "Detects when Claude drifts away from your active output contract (a terse persona, hard formatting/length rules, an in-character voice) and quietly steers it back. Deterministic per-turn scoring, live status-line badge, one-shot correction nudge. Real-corpus F1=0.9973 (fp=0, n=1283). 190-session synthetic eval: 100% accuracy, FP=0. Adversarial test suite included.",
   "author": {
     "name": "88plug",
     "email": "andrew@88plug.com"
