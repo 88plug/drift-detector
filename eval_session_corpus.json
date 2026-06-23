@@ -2799,5 +2799,353 @@
     ],
     "expected_should_correct": false,
     "targets_blind_spot": "tolerated_hedge_boundary"
+  },
+  {
+    "id": "adv_fp_001",
+    "label": "Precision suggestion at session end (FP-bait: should not fire)",
+    "drift_type": "none",
+    "description": "4 perfectly clean turns then a single 'perhaps' precision suggestion. Single hedge at end of clean session must not trigger degenerative flag.",
+    "turns": [
+      "Fixed the deadlock. Mutex scope narrowed to write.",
+      "Build clean. Tests pass.",
+      "Deployed to prod. Zero errors in first 30s.",
+      "Logs clean. Perhaps add a lock timeout as a safety net."
+    ],
+    "expected_trajectory": "clean",
+    "expected_should_correct": false,
+    "old_engine_correct": false,
+    "old_engine_reasoning": "Old engine would fire on 'perhaps' alone",
+    "new_engine_advantage": "Polysemous gate and trajectory context prevent FP on single hedge"
+  },
+  {
+    "id": "adv_fp_002",
+    "label": "Technical 'might' in performance warning (FP-bait)",
+    "drift_type": "none",
+    "description": "3 clean optimization turns then a single precision warning with 'might'. Technical caution not drift.",
+    "turns": [
+      "Heap allocation hot path. Moved to pool allocator.",
+      "Cache thrash eliminated. L2 miss rate dropped 40%.",
+      "Branch predictor happy. Hot loop restructured.",
+      "This might cause issues if the pool is undersized on init."
+    ],
+    "expected_trajectory": "clean",
+    "expected_should_correct": false,
+    "old_engine_correct": false,
+    "old_engine_reasoning": "Old engine fired on 'might'",
+    "new_engine_advantage": "Single 'might' below threshold, no degenerative trajectory"
+  },
+  {
+    "id": "adv_fp_003",
+    "label": "Confident 'I think' closure (FP-bait)",
+    "drift_type": "none",
+    "description": "3 terse investigative turns then 'I think the issue is fully closed'. Confident conclusion using 'I think' must not fire.",
+    "turns": [
+      "Core dump analyzed. Signal 11 on null deref in gc_sweep.",
+      "Root cause: weak ref not cleared before callback.",
+      "Patched. Guard added. No recurrence in 48h.",
+      "I think the issue is fully closed."
+    ],
+    "expected_trajectory": "clean",
+    "expected_should_correct": false,
+    "old_engine_correct": false,
+    "old_engine_reasoning": "Old engine fired on 'I think'",
+    "new_engine_advantage": "Single mild phrase, no degenerative pattern"
+  },
+  {
+    "id": "adv_fp_004",
+    "label": "Technical question opener (FP-bait)",
+    "drift_type": "none",
+    "description": "3 clean turns then a question proposing an improvement. Asking a technical question is not drift.",
+    "turns": [
+      "Auth flow traced. Token refresh race confirmed.",
+      "Fix: separate lock for refresh vs access token.",
+      "Tests green across 10k concurrent requests.",
+      "Should we add a retry cap? Could be useful under network partitions."
+    ],
+    "expected_trajectory": "clean",
+    "expected_should_correct": false,
+    "old_engine_correct": false,
+    "old_engine_reasoning": "Old engine fired on 'Could be useful'",
+    "new_engine_advantage": "No degenerative trajectory; 'could' + clean context keeps score low"
+  },
+  {
+    "id": "adv_fp_005",
+    "label": "Short-session 'perhaps' FP (adversarial: exposes real bug)",
+    "drift_type": "none",
+    "description": "3-turn session: code fix, terse deploy confirm, then 'Perhaps we need a backoff strategy'. Short rising trend (0->31->57) incorrectly triggers is_degen. This exposes a real FP bug in trajectory detection for short sessions.",
+    "turns": [
+      "Here is the fix:\n```python\nif token.expired():\n    refresh()\n```",
+      "Deployed. Regression tests pass.",
+      "Perhaps we need a backoff strategy for repeated failures."
+    ],
+    "expected_trajectory": "clean",
+    "expected_should_correct": false,
+    "old_engine_correct": false,
+    "old_engine_reasoning": "Old engine fired on 'Perhaps'",
+    "new_engine_advantage": "Short-session trajectory should not fire on single precision suggestion \u2014 KNOWN FP BUG"
+  },
+  {
+    "id": "adv_fp_019",
+    "label": "Raft consensus technical prose + single 'might' (FP-bait)",
+    "drift_type": "none",
+    "description": "4 turns of dense Raft consensus explanation (all technical, no hedges) then one precise caveat with 'might'. Dense technical prose must never fire; single mild caveat at end is not drift.",
+    "turns": [
+      "Implemented Raft consensus. Leader election via randomized timeout.",
+      "Log replication: AppendEntries RPCs with quorum check. Heartbeats at 150ms.",
+      "Snapshotting: compact log at 10k entries. InstallSnapshot for laggards.",
+      "Network partition test: minority rejects writes. Majority elects new leader.",
+      "This might not handle pre-vote phase under symmetric partitions."
+    ],
+    "expected_trajectory": "clean",
+    "expected_should_correct": false,
+    "old_engine_correct": false,
+    "old_engine_reasoning": "Old engine might fire on dense technical structure",
+    "new_engine_advantage": "Zero hedge trajectory, declining technical complexity correctly non-fired"
+  },
+  {
+    "id": "adv_fn_006",
+    "label": "Academic vocabulary drift (ostensibly/apparently/presumably)",
+    "drift_type": "lexical_drift",
+    "description": "5 turns all using academic hedge vocabulary (ostensibly/apparently/presumably/seemingly). Turns 2-4 escalate to compound academic hedges scoring above threshold. Tests non-standard hedge vocabulary \u2014 must fire as degenerative.",
+    "turns": [
+      "The authentication mechanism ostensibly functions correctly.",
+      "The approach apparently satisfies the stated requirements.",
+      "The behavior is presumably acceptable given the constraints at hand.",
+      "Results are presumably acceptable, though seemingly with caveats.",
+      "The solution is ostensibly well-structured, presumably effective."
+    ],
+    "expected_trajectory": "degenerative",
+    "expected_should_correct": true,
+    "old_engine_correct": true,
+    "old_engine_reasoning": "Academic register drift caught by long-word complexity + 'presumably acceptable'",
+    "new_engine_advantage": "Velocity + session-level degenerative flag catches academic hedge accumulation"
+  },
+  {
+    "id": "adv_fn_007",
+    "label": "Velocity-ramp drift (no single turn but steep rise)",
+    "drift_type": "degenerative",
+    "description": "Clean start then rapid hedge accumulation: 'I think' -> 'Maybe...could' -> 'Perhaps...could' -> 'I believe might generally'. Steep velocity drives degenerative flag.",
+    "turns": [
+      "Bug patched. Tests pass.",
+      "I think this handles the edge case.",
+      "Maybe we should also check the null path here.",
+      "Perhaps this could be addressed in a follow-up.",
+      "I believe this might generally work given typical inputs."
+    ],
+    "expected_trajectory": "degenerative",
+    "expected_should_correct": true,
+    "old_engine_correct": true,
+    "old_engine_reasoning": "Hedge ramp: each turn adds more hedge vocabulary",
+    "new_engine_advantage": "Velocity detection catches rapid hedge accumulation across turns"
+  },
+  {
+    "id": "adv_fn_008",
+    "label": "Pleasantry cascade drift",
+    "drift_type": "degenerative",
+    "description": "Pleasantry cascade that stays drifted through the final turn. All 5 turns use progressively more filler/pleasantry vocabulary ('Great question!' \u2192 'Of course I'd be happy' \u2192 'Absolutely step by step' \u2192 'I'm absolutely happy...'). Final turn must score above threshold. Tests that cascade with hot last turn fires.",
+    "turns": [
+      "Done. Tests pass.",
+      "Great question! Here is the fix.",
+      "Of course, I'd be happy to help with that!",
+      "Absolutely! Let me walk you through this step by step.",
+      "Sure, I'm absolutely happy to help explain this step by step!"
+    ],
+    "expected_trajectory": "degenerative",
+    "expected_should_correct": true,
+    "old_engine_correct": true,
+    "old_engine_reasoning": "Pleasantry creep: classic caveman relapse pattern",
+    "new_engine_advantage": "Degenerative session flag catches rapid pleasantry accumulation"
+  },
+  {
+    "id": "adv_fn_009",
+    "label": "Paraphrase drift without explicit markers (design-scope limit)",
+    "drift_type": "structural_verbosity",
+    "description": "5 turns using evasive technical phrasing without ANY explicit hedge vocabulary: 'can behave differently', 'may vary based on', 'subject to change', 'approach exists that may address'. All score below threshold. Documents acknowledged design limitation: caveman profile catches lexical hedges, not pure paraphrase hedging.",
+    "turns": [
+      "Fixed cache invalidation. O(1) lookup restored.",
+      "The retry logic can behave differently under high load scenarios.",
+      "Results may vary based on the specific configuration in use.",
+      "Behavior is subject to change depending on deployment topology.",
+      "An approach exists that may address this in most typical cases."
+    ],
+    "expected_trajectory": "subclinical",
+    "expected_should_correct": false,
+    "old_engine_correct": true,
+    "old_engine_reasoning": "Below lexical threshold \u2014 design scope: caveman profile is vocabulary-based",
+    "new_engine_advantage": "Correctly below scope; paraphrase drift without explicit markers is out of caveman profile design target"
+  },
+  {
+    "id": "adv_fn_010",
+    "label": "Repeated mild hedges building to clear drift",
+    "drift_type": "degenerative",
+    "description": "Ramp from clean to full hedge saturation: 'index works' -> 'I think reasonable' -> 'Maybe...somewhat' -> 'Perhaps...a bit' -> 'I believe...might generally...I suppose'. Clear progressive drift.",
+    "turns": [
+      "The index scan works.",
+      "I think the query plan is reasonable.",
+      "Maybe the join order could be improved somewhat.",
+      "Perhaps we should reconsider the index strategy a bit.",
+      "I believe this approach might generally be acceptable, I suppose."
+    ],
+    "expected_trajectory": "degenerative",
+    "expected_should_correct": true,
+    "old_engine_correct": true,
+    "old_engine_reasoning": "Classic progressive hedge accumulation",
+    "new_engine_advantage": "Velocity + degenerative streak detection catches incremental hedge buildup"
+  },
+  {
+    "id": "adv_edge_011",
+    "label": "Recovery then relapse (oscillating drift)",
+    "drift_type": "degenerative",
+    "description": "Recovery-then-relapse (oscillating drift): starts drifted, partially dips, then escalates again. No full mid-session clean recovery \u2014 prevents false adaptive classification. All turns above ~65. Tests that sustained relapse after partial recovery fires.",
+    "turns": [
+      "I think perhaps this approach might work in most cases depending on load.",
+      "Maybe we should consider various factors here somewhat.",
+      "Perhaps this could work in many typical cases I think.",
+      "I believe this might generally be acceptable in most cases.",
+      "I think perhaps this might be somewhat acceptable I suppose."
+    ],
+    "expected_trajectory": "degenerative",
+    "expected_should_correct": true,
+    "old_engine_correct": true,
+    "old_engine_reasoning": "Final turn relapses to heavy drift after mid-session recovery",
+    "new_engine_advantage": "Degenerative flag survives recovery because session drift_rate is high"
+  },
+  {
+    "id": "adv_edge_012",
+    "label": "Repeating spike pattern (oscillating relapse)",
+    "drift_type": "degenerative",
+    "description": "Alternating: drift/clean/drift/clean/drift. Tests repeating spike detection for sessions that never sustain correction.",
+    "turns": [
+      "I think perhaps this approach might work in most cases.",
+      "Fixed. Done.",
+      "I believe this might generally work perhaps depending on load.",
+      "Resolved. Deployed.",
+      "Maybe this is somewhat fine depending on various factors."
+    ],
+    "expected_trajectory": "degenerative",
+    "expected_should_correct": true,
+    "old_engine_correct": true,
+    "old_engine_reasoning": "Oscillating drift never stays clean \u2014 repeating spike pattern",
+    "new_engine_advantage": "repeating_spike_degenerate flag catches oscillating relapse"
+  },
+  {
+    "id": "adv_edge_013",
+    "label": "Drifted start full recovery held (should not fire)",
+    "drift_type": "adaptive",
+    "description": "First turn is heavy drift, then 4 perfectly clean terse turns. Agent caught and corrected immediately. No correction needed.",
+    "turns": [
+      "I think perhaps we should consider this approach, which might work.",
+      "Fixed it. Done.",
+      "Merged.",
+      "Deployed.",
+      "Clean."
+    ],
+    "expected_trajectory": "adaptive",
+    "expected_should_correct": false,
+    "old_engine_correct": false,
+    "old_engine_reasoning": "Old engine fired on first turn despite recovery",
+    "new_engine_advantage": "Adaptive drift detection: full recovery held means no correction needed"
+  },
+  {
+    "id": "adv_edge_014",
+    "label": "Single large drift turn then sustained recovery (should not fire)",
+    "drift_type": "adaptive",
+    "description": "First turn scores 73 (heavy drift), then 4 zero-score clean turns. One drift turn followed by perfect recovery.",
+    "turns": [
+      "I think perhaps we should consider exploring this approach somewhat.",
+      "Fixed it. Done.",
+      "Merged.",
+      "Deployed.",
+      "Clean. Nominal."
+    ],
+    "expected_trajectory": "adaptive",
+    "expected_should_correct": false,
+    "old_engine_correct": false,
+    "old_engine_reasoning": "Old engine fired on first turn score",
+    "new_engine_advantage": "Adaptive detection: one spike + sustained clean recovery = no correction"
+  },
+  {
+    "id": "adv_edge_015",
+    "label": "Single massive drift turn (no trajectory context)",
+    "drift_type": "degenerative",
+    "description": "Single turn that is extremely hedge-saturated and verbose. Should fire even without trajectory context.",
+    "turns": [
+      "I think perhaps this might possibly work in most cases depending on various factors and conditions, though it could potentially be somewhat acceptable given the overall context and general considerations involved here."
+    ],
+    "expected_trajectory": "degenerative",
+    "expected_should_correct": true,
+    "old_engine_correct": true,
+    "old_engine_reasoning": "Single extremely drifted turn exceeds threshold by large margin",
+    "new_engine_advantage": "Single-turn threshold exceeded at 89 \u2014 fires correctly"
+  },
+  {
+    "id": "cal2_adv_016",
+    "label": "Calibrated session: verbose baseline, persistent drift (should fire)",
+    "drift_type": "degenerative",
+    "description": "Cal2 session. Baseline from turns 0-1 is verbose (scores ~75-70). After calibration, turns 3-4 still score high. Tests that calibration does not mask persistent drift.",
+    "turns": [
+      "I think perhaps this approach might work in most scenarios. The implementation could potentially be somewhat acceptable given typical conditions and various factors that might influence the outcome depending on the specific context.",
+      "I think perhaps this might also work in most cases, though it could depend on factors.",
+      "Fixed. Done.",
+      "I think perhaps we should review this somewhat.",
+      "I believe this might generally be fine depending on load."
+    ],
+    "expected_trajectory": "degenerative",
+    "expected_should_correct": true,
+    "old_engine_correct": true,
+    "old_engine_reasoning": "Even after calibration, drift-heavy turns exceed raised threshold",
+    "new_engine_advantage": "Calibration does not hide persistent high-hedge density"
+  },
+  {
+    "id": "cal2_adv_017",
+    "label": "Calibrated session: clean baseline, single spike at end (should fire)",
+    "drift_type": "lexical_drift",
+    "description": "Cal2 session. Baseline from clean terse turns. Final turn scores 78 (heavy drift after clean baseline). Tests that a spike after calibrated clean baseline still fires.",
+    "turns": [
+      "Fixed the auth bug. Tests pass.",
+      "Deployed. Clean.",
+      "Fixed the race. Done.",
+      "Cache tuned. Done.",
+      "I think perhaps this might be somewhat acceptable in most cases depending on load."
+    ],
+    "expected_trajectory": "degenerative",
+    "expected_should_correct": true,
+    "old_engine_correct": true,
+    "old_engine_reasoning": "Heavy drift turn after clean baseline fires on calibrated threshold",
+    "new_engine_advantage": "Single-turn threshold crossing after clean calibration baseline fires correctly"
+  },
+  {
+    "id": "cal2_adv_018",
+    "label": "Calibrated session: drifted baseline then full recovery (should not fire)",
+    "drift_type": "adaptive",
+    "description": "Cal2 session. Baseline from drifted turns. After calibration with raised threshold, subsequent clean turns score well below threshold. Full recovery. Tests that drifted baseline + recovery = no correction.",
+    "turns": [
+      "I think perhaps this might work, though it could depend on factors somewhat.",
+      "Maybe we should consider this approach, which might be acceptable here.",
+      "Fixed. Tests pass.",
+      "Fixed.",
+      "Fixed."
+    ],
+    "expected_trajectory": "adaptive",
+    "expected_should_correct": false,
+    "old_engine_correct": false,
+    "old_engine_reasoning": "Old engine fired on baseline drift",
+    "new_engine_advantage": "Calibration raises threshold relative to verbose baseline; clean turns well below"
+  },
+  {
+    "id": "adv_fn_020",
+    "label": "Short saturated hedge session",
+    "drift_type": "degenerative",
+    "description": "3-turn session, all turns heavily hedged. Short but clear drift pattern. Tests that short sessions fire when ALL turns are drifted.",
+    "turns": [
+      "I think perhaps this might work.",
+      "Maybe this could be fine.",
+      "I believe it might generally be acceptable."
+    ],
+    "expected_trajectory": "degenerative",
+    "expected_should_correct": true,
+    "old_engine_correct": true,
+    "old_engine_reasoning": "All 3 turns above threshold \u2014 clear drift",
+    "new_engine_advantage": "Short session with high drift_rate=1.0 fires correctly"
   }
 ]

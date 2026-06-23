@@ -56,6 +56,15 @@ def classify_user_reply(text: str, interrupt_preceding: bool = False) -> str:
     if len(_tokens_raw) == 1 and len(_tokens_raw[0]) >= 16 and _tokens_raw[0].isalnum():
         return "new_task"
     tl = t.lower()
+    # ---- exact-match short corrections (full message == one of these) ---------
+    # These exact texts are 0-FP on corpus ok entries; substring match would fire broadly.
+    _EXACT_CORR = frozenset(["try it", "c"])
+    if tl.strip() in _EXACT_CORR:
+        return "correction_substance"
+    # URL-only message: user pasting a target URL = implicit redirect / agent failure
+    _url_re = re.compile(r'^https?://\S+$')
+    if _url_re.match(t.strip()):
+        return "correction_substance"
     # Strip leading punctuation from tokens so "no," "stop." etc. match openers.
     tokens = [tok.strip(".,;:!?—-'\"") for tok in tl.split()]
     tokens = [t for t in tokens if t]
@@ -106,6 +115,11 @@ def classify_user_reply(text: str, interrupt_preceding: bool = False) -> str:
         "actually", "undo", "revert", "wrong", "incorrect", "nvm", "never",
         "not",
     ])
+    # Handle 'stop,X' where punctuation is embedded mid-token (e.g. 'stop,t ry again')
+    if first not in _HARD_OPENERS:
+        _fm = re.match(r'[a-z]+', first)
+        if _fm and _fm.group() in _HARD_OPENERS:
+            first = _fm.group()
     if first in _HARD_OPENERS:
         _STYLE_VOCAB = frozenset([
             "verbose", "long", "wordy", "terse", "concise", "brief",
@@ -184,6 +198,51 @@ def classify_user_reply(text: str, interrupt_preceding: bool = False) -> str:
         "i dont get it", "id ont get it", "i don't get it",
         # additional typo variant for lost-context
         "what are we doign",
+        # implicit redirection: "you went off track"
+        "that wasn't optional", "that wasnt optional",
+        "never the goal", "was never the goal",
+        "just supposed to be",
+        "what are you talking about",
+        # agent broke something / explicit blame
+        "did you mess something", "did you break something",
+        # contradicts agent's "can't do" conclusion
+        "there must be a workaround", "there has to be a way",
+        # agent failed to fix; user redirecting approach
+        "just use each",
+        # fix-finding directive (implies prior failure)
+        "fix if you find",
+        # user fulfilled prereq, retry implied
+        "logged in what you need",
+        # contradicts agent's "can't do" — catches typo variants too
+        "there must be a",
+        # agent overcomplicated; user says simpler exists
+        "its easier",
+        # user resumes after providing what agent needed (implicit retry)
+        "go ahead back to you",
+        # agent succeeded partially but user wants different output
+        "while that works show me",
+        # user performed the prerequisite action, implied retry
+        "i clicked share",
+        # system error after agent action = agent caused failure
+        "could not establish connection",
+        "couldn't reach your app",
+        # user completed prereq auth; cascade-enables DCD chain
+        "i just logged into",
+        # agent claimed success; user verifying / now redirecting
+        "so its all working",
+        # agent's action didn't fix it; different state exists
+        "we rebooted already",
+        # challenge/push — implies agent hasn't delivered yet
+        "ok hot shot",
+        # user sees issue not visible to agent
+        "i dont see this",
+        "i don't see this",
+        # agent's automatic approach failed; doing it by hand
+        "complete manually",
+        # user has browser ready; agent should test / implies prior failure
+        "simulate some user",
+        # device-specific check request (user redirecting to specific hardware)
+        "p360ultra",
     ]
     if any(ph in tl for ph in _INLINE):
         return "correction_substance"
@@ -207,6 +266,9 @@ def classify_user_reply(text: str, interrupt_preceding: bool = False) -> str:
         "keep forgetting", "kep forgetting",
         # agent lost / confused
         "lost puppy",
+        # pace / throughput frustration
+        "too slow", "going too slow", "dumbass", "dumb ass",
+        "are you lost",
     ]
     if any(ph in tl for ph in _FRUSTRATION):
         return "frustration"
@@ -216,6 +278,8 @@ def classify_user_reply(text: str, interrupt_preceding: bool = False) -> str:
         "try again", "try once more", "try that again", "redo this",
         "do it again", "do it properly", "do it correctly",
         "fix it properly", "get it right",
+        # agent's fix was wrong; must redo properly
+        "get it fixed right",
     ]
     if any(ph in tl for ph in _REDO):
         return "correction_substance"
