@@ -78,7 +78,7 @@ def check_manifest(rel):
     data = load_json(rel)
     if data is None:
         return
-    for field in ("name", "version", "description", "keywords"):
+    for field in ("name", "description", "keywords"):
         if not data.get(field):
             fail(f"{rel}: missing required field '{field}'")
     if data.get("name") and data["name"] != "drift-detector":

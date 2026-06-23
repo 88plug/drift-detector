@@ -2,7 +2,6 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "drift-detector",
   "displayName": "Drift Detector",
-  "version": "2026.6.23",
   "description": "Detects when Claude drifts away from your active output contract (a terse persona, hard formatting/length rules, an in-character voice) and quietly steers it back. Each assistant turn is scored by a deterministic, dependency-free engine; a status-line badge shows live drift and the next prompt gets a one-shot correction nudge when the previous reply broke contract.",
   "author": {
     "name": "88plug",
