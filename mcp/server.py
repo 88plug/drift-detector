@@ -32,7 +32,7 @@ import sqlite3
 import sys
 from typing import Any, Dict, List, Optional
 
-PROTOCOL_VERSION = "2024-11-05"
+PROTOCOL_VERSION = "2025-11-25"
 SERVER_NAME = "drift-detector"
 SERVER_VERSION = "1.0.0"
 PLUGIN_SLUG = "drift-detector-88plug"
@@ -323,6 +323,8 @@ def tool_drift_set_profile(args: Dict[str, Any]) -> Dict[str, Any]:
 TOOLS = {
     "drift_status": {
         "fn": tool_drift_status,
+        "title": "Drift Status",
+        "annotations": {"readOnlyHint": True},
         "description": "Current drift rollup for a session: latest score, verdict, "
                        "turn count, drift rate, smoothed EWMA score, and active "
                        "profile. Consult when the user asks about drift or you "
@@ -337,6 +339,8 @@ TOOLS = {
     },
     "drift_recent": {
         "fn": tool_drift_recent,
+        "title": "Drift Recent",
+        "annotations": {"readOnlyHint": True},
         "description": "The most recent scored assistant turns (newest first), each "
                        "with timestamp, score, verdict, and profile.",
         "schema": {
@@ -350,6 +354,8 @@ TOOLS = {
     },
     "drift_explain": {
         "fn": tool_drift_explain,
+        "title": "Drift Explain",
+        "annotations": {"readOnlyHint": True},
         "description": "Score arbitrary text against a profile right now and return "
                        "the score, verdict, the top drift offenders, and the raw "
                        "per-component breakdown. Useful to check a draft reply "
@@ -366,12 +372,16 @@ TOOLS = {
     },
     "drift_list_profiles": {
         "fn": tool_drift_list_profiles,
+        "title": "Drift List Profiles",
+        "annotations": {"readOnlyHint": True},
         "description": "List available drift profiles (name, description, threshold) "
                        "and flag which one is currently active.",
         "schema": {"type": "object", "properties": {}},
     },
     "drift_set_profile": {
         "fn": tool_drift_set_profile,
+        "title": "Drift Set Profile",
+        "annotations": {"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True},
         "description": "Set the active drift profile by name. Persists to the "
                        "active-profile file so subsequent turns are scored with it.",
         "schema": {
@@ -422,8 +432,8 @@ def handle(req: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     if method == "tools/list":
         return _result(rid, {
             "tools": [
-                {"name": name, "description": spec["description"],
-                 "inputSchema": spec["schema"]}
+                {"name": name, "title": spec["title"], "description": spec["description"],
+                 "inputSchema": spec["schema"], "annotations": spec["annotations"]}
                 for name, spec in TOOLS.items()
             ]
         })
