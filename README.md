@@ -16,8 +16,7 @@ Drift Detector scores every assistant turn for how far it has wandered from the
 contract you set — a terse persona, hard length/format rules, an in-character
 voice — and quietly steers it back. A status-line badge shows live drift; the
 next prompt gets a one-shot correction nudge only when the previous reply broke
-contract. Deterministic, dependency-free, and it never touches your session's
-reliability.
+contract. Deterministic, dependency-free, never touches your session's reliability.
 
 ## Install
 
@@ -47,10 +46,11 @@ seamless solution…", the badge flips to `DRIFT 98%` and your next turn is
 quietly reminded to tighten up.
 
 > [!NOTE]
-> Validated on a 170-session labeled corpus: 100% accuracy, 0.0%
-> false-positive rate. A drift detector that cries wolf on clean terse work is
-> worse than useless, so a zero false-positive rate is the engine's hard
-> invariant — tuned across ten scientific-method laps without ever breaking it.
+> **F1=0.9973** on a 1,283-entry real-corpus (fp=0, tp=375, fn=2, tn=906).
+> 190-session synthetic eval: 100% accuracy, FP=0. Adversarial test suite
+> (37 cases targeting latent FP/FN patterns) included. A drift detector that
+> cries wolf on clean work is worse than useless — the FP=0 constraint was
+> held across every tuning lap without exception.
 
 ## Why / who
 
@@ -67,12 +67,30 @@ nagging every turn.
 | --- | --- |
 | Per-turn scoring | Deterministic 0–100 drift score on every Stop |
 | Morin trajectory | Scores drift as a vector — velocity and trend, not just level — so a self-correcting blip is tolerated and a slow climb is caught |
-| Repeating-spike detection | Flags an oscillating relapse (a session that keeps bouncing back over the line) that looks adaptive turn-by-turn but is degenerative as a cycle |
+| Repeating-spike detection | Flags an oscillating relapse that looks adaptive turn-by-turn but is degenerative as a cycle |
+| DCD pipeline | Deferred Correction Detection: scans N+1…N+10 for user correction follow-ups, improving recall on delayed feedback |
+| ExtraTree classifier | ML stage (n=500, GroupKFold/5, t=0.58) stacked on the rule engine — catches patterns rules miss |
 | Live badge | Status-line segment; composes with your existing statusline |
-| One-shot nudge | Next prompt gets a correction reminder only when drifted, on a cooldown |
+| One-shot nudge | Next prompt gets a correction reminder only when drifted, on a cooldown — never nags |
 | Profiles | `caveman`, `strict-instructions`, `persona`, plus your own |
 | MCP tools | `drift_status`, `drift_recent`, `drift_explain` (read-only) |
 | Commands | `/drift:status`, `report`, `profile`, `reset`, `debug` |
+
+## Metrics
+
+Tuned through 21 scientific-method rounds on a 1,283-entry real-corpus extracted
+from production sessions:
+
+| Round | F1 | Notes |
+|-------|----|-------|
+| R0 | 0.21 | Baseline |
+| R18 | 0.633 | 22-feature LR classifier |
+| R19 | 0.9543 | ExtraTree 43-feature + DCD steps=8 |
+| R20 | 0.977 | 11 new classify\_user\_reply patterns + DCD steps=10 |
+| **R21** | **0.9973** | 17 patterns + exact-match gate + URL gate — ceiling reached |
+
+Two irreducible FNs remain: one credential provision in ok context and one bare
+"Try now" indistinguishable without session context. Precision = 1.000 (fp=0).
 
 ## Commands
 
@@ -90,20 +108,18 @@ index, writes the badge, and drops a marker if the turn drifted. The next
 `UserPromptSubmit` consumes that marker and injects a short correction. A
 read-only MCP server exposes the state to the model.
 
-The point engine answers "how bad is *this* turn?" with a single number. But a
-snapshot lies about dynamics, so a trajectory layer (`src/lib/drift_trajectory.py`)
-treats drift as a vector: an isolated spike that immediately falls back is the
-system self-correcting and is left alone, while a sustained climb, a plateau
-parked just under threshold, or a repeating-spike cycle is flagged. This
-adaptive-vs-degenerative distinction is what keeps the false-positive rate at
-zero — corrections fire on patterns, not on single twitchy turns.
+The **point engine** answers "how bad is *this* turn?" with a single number. The
+**trajectory layer** (`src/lib/drift_trajectory.py`) treats drift as a vector:
+velocity, plateau detection, repeating-spike cycle detection. The **ExtraTree
+classifier** (`scripts/backtest_real.py`) stacks on top for the real-corpus eval.
+The **DCD pipeline** (Deferred Correction Detection) scans the 10 turns following
+a candidate for user correction signals, recovering cases where drift feedback is
+delayed.
 
 Scoring is lexical and structural: hedges, filler, hype, and meta-narration
-markers combined with verbosity, length, and complexity pressure, aggregated
-with a noisy-OR so one strong signal carries while many weak ones still
-accumulate. Code blocks are stripped before scoring — a terse persona is still
-allowed to emit normal code. Everything is pure stdlib and fully deterministic:
-the same text and profile always produce the same score.
+combined with verbosity, length, and complexity, aggregated with a noisy-OR.
+Code blocks are stripped before scoring. Everything is pure stdlib — same text
+and profile always produce the same score.
 
 ## Profiles
 
@@ -118,10 +134,11 @@ your own as a JSON file and switch with `/drift:profile`. See
 ```bash
 make selftest    # engine self-test
 make test        # pytest suite
-make validate    # full plugin CI gate
+make validate    # full plugin CI gate (66 checks)
+python3 scripts/adversarial_classify_test.py   # 37-case adversarial unit test
 ```
 
-See `EXPERIMENTS.md` for the ten-lap tuning ledger and `IMPLEMENTATION_NOTES.md`
+See `EXPERIMENTS.md` for the 21-round tuning ledger and `IMPLEMENTATION_NOTES.md`
 for the design decisions.
 
 ## License

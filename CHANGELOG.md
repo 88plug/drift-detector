@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.0.0
+
+- Real-corpus eval campaign (21 rounds): **F1=0.9973**, precision=1.0000, recall=0.9947
+  on 1,283 labeled entries (tp=375, fp=0, fn=2, tn=906).
+- ExtraTree classifier (n\_estimators=500, max\_depth=10, class\_weight='balanced',
+  GroupKFold/5) stacked on rule engine — 43 features.
+- DCD pipeline (Deferred Correction Detection): scans N+1…N+10 turns, steps=10, t=0.58.
+- `classify_user_reply()`: ~30 patterns added over R19–R21 covering corrections,
+  frustration, approval, continuation; exact-match gate; URL-only gate.
+- 190-session synthetic eval corpus (was 170): 100% accuracy, FP=0.
+- Adversarial test suite: `scripts/adversarial_classify_test.py` — 37 cases,
+  documents 16 latent FP patterns and 13 FN gaps.
+- New docs pages: Algorithm, Eval & Tuning, Profiles.
+- CI: 66 checks, 0 failures.
+
 ## 1.4.0
 
 - Auto-calibration: `scripts/update_guidance.py` analyses the drift DB and

@@ -26,6 +26,12 @@ theme:
         icon: material/weather-sunny
         name: Switch to light mode
 
+nav:
+  - Home: index.md
+  - Algorithm: algorithm.md
+  - Eval & Tuning: eval.md
+  - Profiles: profiles.md
+
 markdown_extensions:
   - admonition
   - attr_list
