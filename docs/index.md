@@ -31,10 +31,10 @@ bash "$(/plugin path drift-detector)/install.sh"
 You'll see `caveman | 12% | ok`. When a reply relapses into hedging or verbosity,
 the badge flips to `DRIFT 98%` and your next prompt is quietly reminded to tighten up.
 
-> [!NOTE]
-> **F1=0.9973** on 1,283 real-corpus entries (fp=0, tp=375, fn=2, tn=906).
-> 190-session synthetic eval: **100% accuracy, FP=0**. Adversarial test suite included.
-> The FP=0 constraint was held across all 21 tuning rounds without exception.
+!!! note
+    **F1=0.9973** on 1,283 real-corpus entries (fp=0, tp=375, fn=2, tn=906).
+    190-session synthetic eval: **100% accuracy, FP=0**. Adversarial test suite included.
+    The FP=0 constraint was held across all 21 tuning rounds without exception.
 
 ## Why / who
 
