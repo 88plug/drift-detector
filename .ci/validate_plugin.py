@@ -61,33 +61,41 @@ def all_json_parse():
                     ok(f"json parses: {rel}")
 
 
-def check_manifest(rel, discovery=False):
-    """Check a plugin manifest.
+def check_no_root_manifest():
+    """The Claude Code spec defines no root-level plugin.json; nothing reads one.
+    There must be exactly ONE manifest, at .claude-plugin/plugin.json."""
+    if os.path.isfile(os.path.join(ROOT, "plugin.json")):
+        fail("root plugin.json must not exist (spec defines none; use .claude-plugin/plugin.json)")
+    else:
+        ok("no root plugin.json (single-manifest layout)")
 
-    discovery=True: .claude-plugin/plugin.json is a marketplace-discovery manifest —
-    it carries name/description/keywords but no runtime fields (version, hooks).
+
+def check_manifest(rel):
+    """Check the single plugin manifest at .claude-plugin/plugin.json.
+
+    It carries everything — identity, version, keywords, and inline hooks.
     """
     data = load_json(rel)
     if data is None:
         return
-    required = ("name", "description") if discovery else ("name", "version", "description")
-    for field in required:
+    for field in ("name", "version", "description", "keywords"):
         if not data.get(field):
             fail(f"{rel}: missing required field '{field}'")
     if data.get("name") and data["name"] != "drift-detector":
         fail(f"{rel}: name must be 'drift-detector'")
-    if not discovery:
-        hooks = data.get("hooks")
-        if isinstance(hooks, str):
-            hp = os.path.join(ROOT, hooks.lstrip("./"))
-            if not os.path.isfile(hp):
-                fail(f"{rel}: hooks path not found: {hooks}")
-            else:
-                check_hooks_obj(load_json(os.path.relpath(hp, ROOT)), rel)
-        elif isinstance(hooks, dict):
-            check_hooks_obj({"hooks": hooks}, rel)
+    if len(data.get("keywords", [])) != 20:
+        fail(f"{rel}: keywords must be exactly 20 (found {len(data.get('keywords', []))})")
+    hooks = data.get("hooks")
+    if isinstance(hooks, str):
+        hp = os.path.join(ROOT, hooks.lstrip("./"))
+        if not os.path.isfile(hp):
+            fail(f"{rel}: hooks path not found: {hooks}")
         else:
-            fail(f"{rel}: missing or malformed hooks")
+            check_hooks_obj(load_json(os.path.relpath(hp, ROOT)), rel)
+    elif isinstance(hooks, dict):
+        check_hooks_obj({"hooks": hooks}, rel)
+    else:
+        fail(f"{rel}: missing or malformed hooks")
     ok(f"manifest ok: {rel}")
 
 
@@ -239,8 +247,8 @@ def check_profiles():
 def main():
     print("== drift-detector plugin validation ==")
     all_json_parse()
-    check_manifest("plugin.json")
-    check_manifest(".claude-plugin/plugin.json", discovery=True)
+    check_no_root_manifest()
+    check_manifest(".claude-plugin/plugin.json")
     check_marketplace()
     check_commands()
     check_skill()

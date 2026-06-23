@@ -18,5 +18,9 @@ eval_run_*.json
 EVAL_REPORT.md
 MORIN_EVAL_REPORT.md
 FINAL_5LAP_REPORT.md
+# real session/corpus data — never commit
+*.jsonl
+profiles/real_*
+corpus/real_*
 # mkdocs build
 site/

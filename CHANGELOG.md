@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0
+## 2026.6.23
 
 - Real-corpus eval campaign (21 rounds): **F1=0.9973**, precision=1.0000, recall=0.9947
   on 1,283 labeled entries (tp=375, fp=0, fn=2, tn=906).
@@ -15,7 +15,7 @@
 - New docs pages: Algorithm, Eval & Tuning, Profiles.
 - CI: 66 checks, 0 failures.
 
-## 1.4.0
+## 2026.6.10
 
 - Auto-calibration: `scripts/update_guidance.py` analyses the drift DB and
   writes a data-driven anti-drift block to the project's `CLAUDE.md` between
@@ -23,7 +23,7 @@
 - Stop hook now triggers calibration every 10 cumulative drift turns per project.
 - New command `/drift-detector:calibrate` for manual on-demand regeneration.
 
-## 1.3.0
+## 2026.5.20
 
 - Engine tuned through 10 scientific-method laps against a 170-session labeled corpus.
 - Final eval: 100% accuracy, 0.0% false-positive rate.
@@ -38,7 +38,7 @@
 - 13 pytest tests (8 engine + 5 new-feature coverage).
 - 56 CI validation checks.
 
-## 1.0.0
+## 2026.5.1
 
 - Initial release: deterministic drift scoring engine (`drift_score.py`).
 - Edgar Morin trajectory module (`drift_trajectory.py`): velocity, adaptive vs
