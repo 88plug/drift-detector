@@ -58,6 +58,24 @@ number you can see and act on.
 | MCP tools | `drift_status`, `drift_recent`, `drift_explain` (read-only) |
 | Commands | `/drift:status`, `report`, `profile`, `reset`, `debug` |
 
+## Metrics
+
+Tuned through 21 scientific-method rounds on a 1,283-entry real-corpus extracted
+from production sessions:
+
+| Round | F1 | Notes |
+|-------|----|-------|
+| R0 | 0.21 | Baseline |
+| R18 | 0.633 | 22-feature LR classifier |
+| R19 | 0.9543 | ExtraTree 43-feature + DCD steps=8 |
+| R20 | 0.977 | 11 new classify\_user\_reply patterns + DCD steps=10 |
+| **R21** | **0.9973** | 17 patterns + exact-match gate + URL gate — ceiling reached |
+
+Two irreducible FNs: one credential provision in ok context and one bare
+"Try now" indistinguishable without session context. Precision = 1.000 (fp=0).
+
+See [Eval & Tuning](eval.md) for the full 21-round campaign.
+
 ## Commands
 
 - `/drift:status` — live score, verdict, drift rate, trend
@@ -76,6 +94,17 @@ and injects a correction only when drift is degenerative.
 The scoring engine is deterministic and dependency-free: stdlib only, no network
 calls. See [Algorithm](algorithm.md) for the full pipeline and [Eval](eval.md)
 for the 21-round scientific-method campaign.
+
+## Development
+
+```bash
+make selftest    # engine self-test
+make test        # pytest suite
+make validate    # full plugin CI gate (66 checks)
+python3 scripts/adversarial_classify_test.py   # 37-case adversarial unit test
+```
+
+See [Eval & Tuning](eval.md) for the 21-round tuning ledger.
 
 ## License
 
