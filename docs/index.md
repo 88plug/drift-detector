@@ -1,5 +1,3 @@
-<div align="center">
-
 # Drift Detector
 
 A Claude Code plugin that scores every assistant turn for behavioral drift from
@@ -9,8 +7,6 @@ your active output contract and steers it back automatically.
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat)](https://github.com/88plug/drift-detector/blob/master/LICENSE)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2?style=flat)](https://github.com/88plug/claude-code-plugins)
 [![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/88plug/drift-detector)
-
-</div>
 
 ## Install
 
