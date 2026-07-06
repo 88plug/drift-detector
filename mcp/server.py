@@ -443,7 +443,7 @@ def handle(req: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         args = params.get("arguments") or {}
         spec = TOOLS.get(name)
         if not spec:
-            return _error(rid, INVALID_PARAMS, f"unknown tool: {name}")
+            return _result(rid, {"content": [{"type": "text", "text": f"unknown tool: {name}"}], "isError": True})
         try:
             payload = spec["fn"](args)
             is_error = False
