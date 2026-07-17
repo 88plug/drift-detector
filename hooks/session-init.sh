@@ -11,7 +11,7 @@
 # Best-effort, always exits 0. Emits nothing to stdout (no context injection).
 set -u
 
-DD_HOOK_NAME="session-init"
+export DD_HOOK_NAME="session-init"
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/resolve-paths.sh
 . "${SELF_DIR}/lib/resolve-paths.sh"

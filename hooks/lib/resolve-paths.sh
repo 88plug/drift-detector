@@ -54,25 +54,26 @@ dd_resolve_data_root() {
 }
 
 DD_DATA_ROOT="$(dd_resolve_data_root)"
-DD_DB="${DD_DATA_ROOT}/drift.db"
+# Exported for sourced consumers (capture-stop, inject-correction, session-init).
+export DD_DB="${DD_DATA_ROOT}/drift.db"
 DD_PROFILES_DIR="${DD_DATA_ROOT}/profiles"
 DD_MARKERS_DIR="${DD_DATA_ROOT}/markers"
 DD_CONTROLLER_DIR="${DD_DATA_ROOT}/controller"
 DD_LOGS_DIR="${DD_DATA_ROOT}/logs"
 DD_ACTIVE_PROFILE_FILE="${DD_DATA_ROOT}/active-profile"
 DD_DEBUG_SENTINEL="${DD_DATA_ROOT}/.debug"
-DD_INCREMENTAL_LOCK="${DD_DATA_ROOT}/.incremental.lock"
-DD_JUDGE_LOCK="${DD_DATA_ROOT}/.judge.lock"
+export DD_INCREMENTAL_LOCK="${DD_DATA_ROOT}/.incremental.lock"
+export DD_JUDGE_LOCK="${DD_DATA_ROOT}/.judge.lock"
 
 # The badge — read by statusline on every render. <=32 bytes, mode 0600.
-DD_BADGE="${CLAUDE_CONFIG_DIR}/.drift-state"
+export DD_BADGE="${CLAUDE_CONFIG_DIR}/.drift-state"
 
 # Engine + scripts (read-only, inside the plugin).
-DD_SCORE_PY="${CLAUDE_PLUGIN_ROOT}/scripts/score.py"
-DD_ENGINE_PY="${CLAUDE_PLUGIN_ROOT}/src/lib/drift_score.py"
-DD_LIB_DIR="${CLAUDE_PLUGIN_ROOT}/src/lib"
-DD_CONTROL_PY="${CLAUDE_PLUGIN_ROOT}/scripts/control.py"
-DD_SCHEMA_SQL="${CLAUDE_PLUGIN_ROOT}/scripts/schema.sql"
+export DD_SCORE_PY="${CLAUDE_PLUGIN_ROOT}/scripts/score.py"
+export DD_ENGINE_PY="${CLAUDE_PLUGIN_ROOT}/src/lib/drift_score.py"
+export DD_LIB_DIR="${CLAUDE_PLUGIN_ROOT}/src/lib"
+export DD_CONTROL_PY="${CLAUDE_PLUGIN_ROOT}/scripts/control.py"
+export DD_SCHEMA_SQL="${CLAUDE_PLUGIN_ROOT}/scripts/schema.sql"
 
 # --- Python discovery ------------------------------------------------------ #
 # Prefer scripts/run-python.sh (thin Claude PATH / Homebrew-safe). Returns an

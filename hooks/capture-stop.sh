@@ -11,7 +11,7 @@
 # the hook always exits 0 with no stdout that Claude would treat as blocking.
 set -u
 
-DD_HOOK_NAME="capture-stop"
+export DD_HOOK_NAME="capture-stop"
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/resolve-paths.sh
 . "${SELF_DIR}/lib/resolve-paths.sh"

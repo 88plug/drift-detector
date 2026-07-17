@@ -13,7 +13,7 @@
 # with hookSpecificOutput.additionalContext on stdout, exit 0.
 set -u
 
-DD_HOOK_NAME="inject-correction"
+export DD_HOOK_NAME="inject-correction"
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/resolve-paths.sh
 . "${SELF_DIR}/lib/resolve-paths.sh"
