@@ -327,8 +327,9 @@ TOOLS = {
         "annotations": {"readOnlyHint": True},
         "description": "Current drift rollup for a session: latest score, verdict, "
                        "turn count, drift rate, smoothed EWMA score, and active "
-                       "profile. Consult when the user asks about drift or you "
-                       "suspect you've drifted from their instructions.",
+                       "profile. Use when the user asks about drift or you "
+                       "suspect you've drifted from their instructions. Returns "
+                       "the live rollup object for the session.",
         "schema": {
             "type": "object",
             "properties": {
@@ -358,10 +359,9 @@ TOOLS = {
         "fn": tool_drift_explain,
         "title": "Drift Explain",
         "annotations": {"readOnlyHint": True},
-        "description": "Score arbitrary text against a profile right now and return "
-                       "the score, verdict, the top drift offenders, and the raw "
-                       "per-component breakdown. Useful to check a draft reply "
-                       "before sending it.",
+        "description": "Score arbitrary text against a profile right now. Use when "
+                       "checking a draft reply before sending it. Returns the score, "
+                       "verdict, top drift offenders, and raw per-component breakdown.",
         "schema": {
             "type": "object",
             "properties": {
