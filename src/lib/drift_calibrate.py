@@ -142,7 +142,8 @@ def _extract_assistant_text(obj) -> Optional[str]:
     if not isinstance(obj, dict):
         return None
 
-    msg = obj.get("message") if isinstance(obj.get("message"), dict) else obj
+    raw_msg = obj.get("message")
+    msg: dict = raw_msg if isinstance(raw_msg, dict) else obj
     role = msg.get("role") or obj.get("role")
     if role != "assistant":
         return None

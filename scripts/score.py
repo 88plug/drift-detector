@@ -437,21 +437,22 @@ def main(argv=None) -> int:
 
     if last_result is None:
         last_result = drift_score.score_text("", profile_dict)
+    result_out: dict = last_result
 
     # Badge to stdout (the Stop hook captures this) on line 1.
-    print(badge_line(last_result))
+    print(badge_line(result_out))
 
     # Optional detail line for the controller: a compact JSON of the raw
     # score/threshold and the top offenders, so the hook can drive the
     # trajectory controller and build proportional correction text.
     if args.emit_detail:
-        offenders = last_result.get("top_offenders", []) or []
+        offenders = result_out.get("top_offenders", []) or []
         print(
             json.dumps(
                 {
-                    "score": float(last_result.get("score", 0.0)),
-                    "threshold": float(last_result.get("threshold", 70.0)),
-                    "verdict": last_result.get("verdict", "ok"),
+                    "score": float(result_out.get("score", 0.0)),
+                    "threshold": float(result_out.get("threshold", 70.0)),
+                    "verdict": result_out.get("verdict", "ok"),
                     "top_offenders": offenders,
                 }
             )
@@ -460,7 +461,7 @@ def main(argv=None) -> int:
     # Rich record to fd 3 if the caller opened it.
     try:
         with os.fdopen(3, "w") as fh3:
-            json.dump(last_result, fh3)
+            json.dump(result_out, fh3)
     except OSError:
         pass
     return 0

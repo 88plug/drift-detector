@@ -30,7 +30,7 @@ Design contract (mirrors drift_score.py)
 from __future__ import annotations
 
 import math
-from typing import List, Optional, Tuple
+from typing import Any, Iterable, List, Optional, Tuple
 
 ENGINE_VERSION = "1.0.0"
 
@@ -79,7 +79,7 @@ def _clean(scores) -> List[float]:
 # --------------------------------------------------------------------------- #
 
 
-def compute_velocity(scores: List[float], window: int = 5) -> float:
+def compute_velocity(scores: Iterable[Any], window: int = 5) -> float:
     """Linear-regression slope over the last `window` scores.
 
     Units: drift-points/turn. Positive == worsening, negative == recovering,
@@ -145,7 +145,7 @@ def _tail_streak(scores: List[float], threshold: float) -> int:
 
 
 def classify_trajectory(
-    scores: List[float], threshold: float = 70.0, window: int = 5
+    scores: Iterable[Any], threshold: float = 70.0, window: int = 5
 ) -> dict:
     """Classify the *motion* of a drift series, not just its level.
 
@@ -331,7 +331,7 @@ def compute_elevation_score(scores: List[float], threshold: float = 70.0) -> flo
 
 
 def compute_session_score(
-    scores: List[float],
+    scores: Iterable[Any],
     threshold: float = 70.0,
     register: Optional[List[Tuple[float, float]]] = None,
 ) -> dict:

@@ -91,9 +91,12 @@ class DriftController:
             for item in hist:
                 if not isinstance(item, dict):
                     continue
+                raw_score, raw_turn = item.get("score"), item.get("turn")
+                if raw_score is None or raw_turn is None:
+                    continue
                 try:
-                    score = float(item.get("score"))
-                    turn = int(item.get("turn"))
+                    score = float(raw_score)
+                    turn = int(raw_turn)
                 except (TypeError, ValueError):
                     continue
                 clean.append({"score": score, "turn": turn})
@@ -143,7 +146,7 @@ class DriftController:
         try:
             turn_num = int(turn_num)
         except (TypeError, ValueError):
-            turn_num = (self.history[-1]["turn"] + 1) if self.history else 0
+            turn_num = int(self.history[-1]["turn"]) + 1 if self.history else 0
         score = max(0.0, min(100.0, score))
         # Idempotency: re-recording the same turn replaces rather than appends,
         # so a re-fired Stop hook doesn't double-count and inflate the streak.

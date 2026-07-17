@@ -23,6 +23,7 @@ import argparse
 import json
 import os
 import sys
+from typing import Any as _Any
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _REPO = os.path.dirname(_HERE)
@@ -45,6 +46,15 @@ try:
 except ImportError:
     _classify_reply = None  # type: ignore[assignment]
 
+# Optional ML stack for --lr / R19 paths. Stubs keep pyright happy when absent.
+_np: _Any = None
+_LR: _Any = None
+_Scaler: _Any = None
+_SKF: _Any = None
+_CVP: _Any = None
+_CM: _Any = None
+_ETC: _Any = None
+_SKLEARN = False
 try:
     import numpy as _np
     from sklearn.linear_model import LogisticRegression as _LR
@@ -58,7 +68,7 @@ try:
 
     _SKLEARN = True
 except ImportError:
-    _SKLEARN = False
+    pass
 
 BASE = _REPO
 with open(os.path.join(BASE, "profiles", "caveman.json")) as _f:
@@ -696,7 +706,8 @@ def _run_dcd_backtest(
             n_estimators=500, max_depth=10, class_weight="balanced", random_state=42
         )
         clf.fit(X[tr], y[tr])
-        probs[te] = clf.predict_proba(X[te])[:, 1]
+        proba = clf.predict_proba(X[te])
+        probs[te] = _np.asarray(proba)[:, 1]
     preds = (probs >= ET_THRESH).astype(int)
 
     # DCD: scan dcd_steps ahead for correction signal

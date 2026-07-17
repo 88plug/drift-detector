@@ -42,8 +42,13 @@ _LIB = os.path.join(os.path.dirname(_HERE), "src", "lib")
 if _LIB not in sys.path:
     sys.path.insert(0, _LIB)
 
+classify_user_reply = None
+classify_mistake_type = None
 try:
-    from drift_user_correction import classify_user_reply, classify_mistake_type
+    from drift_user_correction import (  # type: ignore[no-redef]
+        classify_user_reply,
+        classify_mistake_type,
+    )
 
     _HAS_CORRECTION_LIB = True
 except ImportError:
@@ -112,7 +117,11 @@ def load_mistakes_from_recall(
     Returns a list of {category, correction_text, prior_text, session_id, cwd}
     sorted by ts descending.  Returns [] if DB not accessible or lib missing.
     """
-    if not _HAS_CORRECTION_LIB:
+    if (
+        not _HAS_CORRECTION_LIB
+        or classify_user_reply is None
+        or classify_mistake_type is None
+    ):
         return []
     if not Path(recall_db).exists():
         return []

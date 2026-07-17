@@ -1,0 +1,8 @@
+{
+  "include": ["src", "mcp", "scripts", "tests", ".ci"],
+  "exclude": ["**/__pycache__", ".ruff_cache", ".venv", "site"],
+  "extraPaths": ["src/lib", "src", "mcp", "scripts"],
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "basic",
+  "reportMissingImports": true
+}
