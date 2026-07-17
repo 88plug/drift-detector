@@ -17,8 +17,8 @@ contract. Deterministic, dependency-free, never touches your session's reliabili
 ## Install
 
 ```text
-/plugin marketplace add 88plug/drift-detector
-/plugin install drift-detector@drift-detector
+/plugin marketplace add 88plug/claude-code-plugins
+/plugin install drift-detector@88plug
 ```
 
 Then enable the status-line badge (the one piece a plugin manifest can't auto-wire):
