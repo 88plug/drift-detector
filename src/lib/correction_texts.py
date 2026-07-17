@@ -174,11 +174,17 @@ def _selftest() -> int:
     # Known profile, each severity, rising trajectory.
     g = correction_text("caveman", "gentle", velocity=2.0, streak=1)
     f = correction_text(
-        "caveman", "firm", velocity=4.0, streak=3,
+        "caveman",
+        "firm",
+        velocity=4.0,
+        streak=3,
         violations=["hype (+18)", "filler (+9)"],
     )
     s = correction_text(
-        "caveman", "strong", velocity=1.0, streak=6,
+        "caveman",
+        "strong",
+        velocity=1.0,
+        streak=6,
         violations=["verbosity (+30)"],
     )
     assert "Minor tightening" in g, g

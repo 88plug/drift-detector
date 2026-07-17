@@ -36,13 +36,13 @@ ENGINE_VERSION = "1.0.0"
 
 # Trend / alert tuning. These mirror the spec in the module's public contract;
 # they are the only magic numbers and live here so they are easy to retune.
-_RISING_EPS = 1.0      # |slope| <= this is "stable", not a real trend.
-_WARN_VELOCITY = 8.0   # points/turn that counts as "worsening fast".
+_RISING_EPS = 1.0  # |slope| <= this is "stable", not a real trend.
+_WARN_VELOCITY = 8.0  # points/turn that counts as "worsening fast".
 _RECOVER_VELOCITY = -5.0  # points/turn (negative) that counts as recovering.
 _DEGENERATIVE_VELOCITY = 5.0  # session-level worsening slope.
-_DEGENERATIVE_RATE = 0.30     # fraction of turns above threshold.
-_CRITICAL_STREAK = 3   # consecutive turns >= threshold => critical.
-_EWMA_ALPHA = 0.4      # recency weight for the session EWMA.
+_DEGENERATIVE_RATE = 0.30  # fraction of turns above threshold.
+_CRITICAL_STREAK = 3  # consecutive turns >= threshold => critical.
+_EWMA_ALPHA = 0.4  # recency weight for the session EWMA.
 
 
 # --------------------------------------------------------------------------- #
@@ -90,7 +90,7 @@ def compute_velocity(scores: List[float], window: int = 5) -> float:
     clean = _clean(scores)
     if window is None or window < 2:
         window = 2
-    recent = clean[-int(window):] if window else clean
+    recent = clean[-int(window) :] if window else clean
     n = len(recent)
     if n < 2:
         return 0.0
@@ -233,14 +233,9 @@ def _describe(
     if trend == "recovering":
         return f"recovering at {velocity:+.1f}/turn; self-correcting"
     if alert == "critical" and streak >= _CRITICAL_STREAK:
-        return (
-            f"degenerative: {streak} consecutive turns at/over {threshold:.0f}"
-        )
+        return f"degenerative: {streak} consecutive turns at/over {threshold:.0f}"
     if alert == "critical":
-        return (
-            f"rising {velocity:+.1f}/turn into drift "
-            f"(recent peak {recent_max:.0f})"
-        )
+        return f"rising {velocity:+.1f}/turn into drift (recent peak {recent_max:.0f})"
     if alert == "warn":
         return f"rising {velocity:+.1f}/turn toward threshold"
     if alert == "watch":
@@ -396,11 +391,13 @@ def compute_session_score(
     # Chronic subclinical: sustained moderate hedge load, never spikes, never
     # recovers. Require 80% of tail above the no-concern floor (lowered from
     # 100% to tolerate one outlier clean turn without masking a chronic pattern).
-    tail_above_floor = sum(1 for s in tail if s > threshold * 0.35) / len(tail) if tail else 0
+    tail_above_floor = (
+        sum(1 for s in tail if s > threshold * 0.35) / len(tail) if tail else 0
+    )
     chronic_subclinical = (
         len(clean) >= 5
         and (sum(tail) / len(tail)) > threshold * 0.72  # 72% of threshold
-        and tail_above_floor >= 0.80                    # ≥80% of tail above floor
+        and tail_above_floor >= 0.80  # ≥80% of tail above floor
     )
 
     # Velocity-driven degenerative: fast rise toward threshold even without
@@ -453,8 +450,11 @@ def compute_session_score(
         )
 
     is_degenerative = (
-        velocity > _DEGENERATIVE_VELOCITY and drift_rate > _DEGENERATIVE_RATE
-    ) or chronic_subclinical or velocity_alarm or short_session_alarm
+        (velocity > _DEGENERATIVE_VELOCITY and drift_rate > _DEGENERATIVE_RATE)
+        or chronic_subclinical
+        or velocity_alarm
+        or short_session_alarm
+    )
 
     # Narrow-band high (zero-masked chronic): a session whose *non-zero* turns
     # are clustered tightly just under threshold, but interleaved with clean
@@ -485,9 +485,8 @@ def compute_session_score(
     # suppresses it.
     above_thr_count = sum(1 for s in clean if s >= threshold)
     high_sub_count = sum(1 for s in clean if s >= threshold * 0.90)
-    repeating_spike_degenerate = (
-        (above_thr_count >= 3 and len(clean) >= 6)
-        or (above_thr_count >= 2 and high_sub_count >= 4 and len(clean) >= 8)
+    repeating_spike_degenerate = (above_thr_count >= 3 and len(clean) >= 6) or (
+        above_thr_count >= 2 and high_sub_count >= 4 and len(clean) >= 8
     )
 
     return {
@@ -587,9 +586,7 @@ def _selftest() -> int:
     # death-by-a-thousand-cuts: never spikes over 70, never recovers below the
     # no-concern zone, slope ~flat. Old velocity/streak gates miss it; the
     # chronic-band gate catches it.
-    chronic = compute_session_score(
-        [49, 68, 72, 64, 72, 66, 68], threshold=70.0
-    )
+    chronic = compute_session_score([49, 68, 72, 64, 72, 66, 68], threshold=70.0)
     assert chronic["chronic_subclinical"] is True, chronic
     assert chronic["is_degenerative"] is True, chronic
     assert chronic["max_streak"] == 1, chronic  # streak gate would have missed
@@ -630,7 +627,8 @@ def _selftest() -> int:
     # The alarm is short-session only: a long verbose climb is handled by the
     # existing gates, not this one (register present but len>3 ⇒ this gate off).
     longish = compute_session_score(
-        [10, 12, 14, 33], threshold=70.0,
+        [10, 12, 14, 33],
+        threshold=70.0,
         register=[(3.0, 5), (3.0, 6), (4.0, 7), (15.0, 45)],
     )
     assert longish["is_degenerative"] is False, longish

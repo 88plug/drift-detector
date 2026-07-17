@@ -30,9 +30,8 @@ import json
 import os
 import sqlite3
 import sys
-import time
 from datetime import datetime, timezone
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 # Import the engine. Support both "installed" layout and direct invocation.
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -125,8 +124,11 @@ def all_assistant_turns(transcript_path: str) -> List[str]:
                 except json.JSONDecodeError:
                     continue
                 msg = rec.get("message", rec)
-                role = (msg.get("role") if isinstance(msg, dict) else None) \
-                    or rec.get("role") or rec.get("type")
+                role = (
+                    (msg.get("role") if isinstance(msg, dict) else None)
+                    or rec.get("role")
+                    or rec.get("type")
+                )
                 if role == "assistant":
                     txt = _text_from_message(msg)
                     if txt.strip():
@@ -236,8 +238,17 @@ def persist(
             """INSERT INTO sessions(session_id, first_ts, last_ts, turns,
                    drift_turns, last_score, max_score, ewma_score, profile)
                VALUES(?,?,?,?,?,?,?,?,?)""",
-            (session_id, ts, ts, 1, is_drift, score, score, score,
-             result.get("profile", "caveman")),
+            (
+                session_id,
+                ts,
+                ts,
+                1,
+                is_drift,
+                score,
+                score,
+                score,
+                result.get("profile", "caveman"),
+            ),
         )
     else:
         turns, ewma, mx = row
@@ -247,8 +258,15 @@ def persist(
                    drift_turns=drift_turns+?, last_score=?,
                    max_score=MAX(max_score, ?), ewma_score=?, profile=?
                WHERE session_id=?""",
-            (ts, is_drift, score, score, new_ewma,
-             result.get("profile", "caveman"), session_id),
+            (
+                ts,
+                is_drift,
+                score,
+                score,
+                new_ewma,
+                result.get("profile", "caveman"),
+                session_id,
+            ),
         )
     con.commit()
     _ = cur  # silence linters
@@ -262,14 +280,26 @@ def session_status(con: sqlite3.Connection, session_id: str) -> dict:
         (session_id,),
     ).fetchone()
     if not row:
-        return {"session_id": session_id, "turns": 0, "drift_turns": 0,
-                "last_score": 0.0, "max_score": 0.0, "ewma_score": 0.0,
-                "profile": None}
+        return {
+            "session_id": session_id,
+            "turns": 0,
+            "drift_turns": 0,
+            "last_score": 0.0,
+            "max_score": 0.0,
+            "ewma_score": 0.0,
+            "profile": None,
+        }
     turns, drift_turns, last_score, max_score, ewma, profile, first_ts, last_ts = row
     return {
-        "session_id": session_id, "turns": turns, "drift_turns": drift_turns,
-        "last_score": last_score, "max_score": max_score, "ewma_score": round(ewma, 2),
-        "profile": profile, "first_ts": first_ts, "last_ts": last_ts,
+        "session_id": session_id,
+        "turns": turns,
+        "drift_turns": drift_turns,
+        "last_score": last_score,
+        "max_score": max_score,
+        "ewma_score": round(ewma, 2),
+        "profile": profile,
+        "first_ts": first_ts,
+        "last_ts": last_ts,
         "drift_rate": round(drift_turns / turns, 3) if turns else 0.0,
     }
 
@@ -301,19 +331,33 @@ def main(argv=None) -> int:
     ap.add_argument("--db")
     ap.add_argument("--schema")
     ap.add_argument("--profile-json")
-    ap.add_argument("--rebuild", action="store_true",
-                    help="rescore every assistant turn in the transcript")
-    ap.add_argument("--status", action="store_true",
-                    help="print session rollup JSON and exit")
+    ap.add_argument(
+        "--rebuild",
+        action="store_true",
+        help="rescore every assistant turn in the transcript",
+    )
+    ap.add_argument(
+        "--status", action="store_true", help="print session rollup JSON and exit"
+    )
     ap.add_argument("--no-persist", action="store_true")
-    ap.add_argument("--calibrate", action="store_true",
-                    help="estimate the verbosity baseline from the first turns "
-                         "of the transcript and apply it before scoring")
-    ap.add_argument("--calibrate-n", type=int, default=5,
-                    help="how many early turns to calibrate from (default 5)")
-    ap.add_argument("--emit-detail", action="store_true",
-                    help="print a second stdout line of detail JSON "
-                         "(score/threshold/top_offenders) for the controller")
+    ap.add_argument(
+        "--calibrate",
+        action="store_true",
+        help="estimate the verbosity baseline from the first turns "
+        "of the transcript and apply it before scoring",
+    )
+    ap.add_argument(
+        "--calibrate-n",
+        type=int,
+        default=5,
+        help="how many early turns to calibrate from (default 5)",
+    )
+    ap.add_argument(
+        "--emit-detail",
+        action="store_true",
+        help="print a second stdout line of detail JSON "
+        "(score/threshold/top_offenders) for the controller",
+    )
     args = ap.parse_args(argv)
 
     # Status query path — no scoring.
@@ -336,8 +380,12 @@ def main(argv=None) -> int:
     # from its first N in-contract turns and override the profile's length
     # parameters before scoring. Lexical drift markers stay as-is. Best-effort —
     # any failure leaves the profile untouched.
-    if args.calibrate and drift_calibrate is not None and args.transcript \
-            and os.path.isfile(args.transcript):
+    if (
+        args.calibrate
+        and drift_calibrate is not None
+        and args.transcript
+        and os.path.isfile(args.transcript)
+    ):
         try:
             cal = drift_calibrate.calibrate_from_transcript(
                 args.transcript, n_sample=args.calibrate_n
@@ -353,8 +401,11 @@ def main(argv=None) -> int:
     if args.text is not None:
         turns = [args.text]
     elif args.transcript and os.path.isfile(args.transcript):
-        turns = all_assistant_turns(args.transcript) if args.rebuild \
+        turns = (
+            all_assistant_turns(args.transcript)
+            if args.rebuild
             else [last_assistant_turn(args.transcript)]
+        )
     elif not sys.stdin.isatty():
         turns = [sys.stdin.read()]
     else:
@@ -373,9 +424,9 @@ def main(argv=None) -> int:
         result = drift_score.score_text(text, profile_dict)
         last_result = result
         if con is not None:
-            thash = hashlib.sha256(
-                (text or "").encode("utf-8", "replace")
-            ).hexdigest()[:16]
+            thash = hashlib.sha256((text or "").encode("utf-8", "replace")).hexdigest()[
+                :16
+            ]
             try:
                 persist(con, args.session, result, thash)
             except sqlite3.Error:
@@ -395,12 +446,16 @@ def main(argv=None) -> int:
     # trajectory controller and build proportional correction text.
     if args.emit_detail:
         offenders = last_result.get("top_offenders", []) or []
-        print(json.dumps({
-            "score": float(last_result.get("score", 0.0)),
-            "threshold": float(last_result.get("threshold", 70.0)),
-            "verdict": last_result.get("verdict", "ok"),
-            "top_offenders": offenders,
-        }))
+        print(
+            json.dumps(
+                {
+                    "score": float(last_result.get("score", 0.0)),
+                    "threshold": float(last_result.get("threshold", 70.0)),
+                    "verdict": last_result.get("verdict", "ok"),
+                    "top_offenders": offenders,
+                }
+            )
+        )
 
     # Rich record to fd 3 if the caller opened it.
     try:

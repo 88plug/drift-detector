@@ -29,7 +29,6 @@ session. State lives in a per-session JSON file under the controller dir.
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import sys
 

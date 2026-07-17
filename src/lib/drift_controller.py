@@ -71,7 +71,7 @@ class DriftController:
         self.history: List[Dict[str, float]] = []
         # Number of corrections actually emitted, and the turn of the last one.
         self.corrections_emitted: int = 0
-        self.last_correction_turn: int = -(10 ** 9)
+        self.last_correction_turn: int = -(10**9)
         self.version: str = CONTROLLER_VERSION
 
     # --- persistence ------------------------------------------------------- #
@@ -103,11 +103,9 @@ class DriftController:
         except (TypeError, ValueError):
             self.corrections_emitted = 0
         try:
-            self.last_correction_turn = int(
-                d.get("last_correction_turn", -(10 ** 9))
-            )
+            self.last_correction_turn = int(d.get("last_correction_turn", -(10**9)))
         except (TypeError, ValueError):
-            self.last_correction_turn = -(10 ** 9)
+            self.last_correction_turn = -(10**9)
 
     def save(self) -> None:
         """Atomically persist state. Best-effort; never raises on IO failure."""

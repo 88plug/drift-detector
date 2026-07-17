@@ -13,6 +13,7 @@ Usage:
   python3 extract_real_corpus.py --max-sessions 20   # smoke run
   python3 extract_real_corpus.py --out /tmp/test_corpus.json --window 1
 """
+
 from __future__ import annotations
 
 import argparse
@@ -25,7 +26,7 @@ from typing import List, Optional
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _REPO = os.path.dirname(_HERE)
-_LIB  = os.path.join(_REPO, "src", "lib")
+_LIB = os.path.join(_REPO, "src", "lib")
 if _LIB not in sys.path:
     sys.path.insert(0, _LIB)
 
@@ -35,6 +36,7 @@ from drift_user_correction import classify_user_reply, INTERRUPT_MARKERS  # noqa
 # --------------------------------------------------------------------------- #
 # Low-level JSONL parsing (mirrors score.py — no import to avoid coupling)
 # --------------------------------------------------------------------------- #
+
 
 def _text_from_message(msg) -> str:
     if isinstance(msg, str):
@@ -87,6 +89,7 @@ def _get_text(rec: dict) -> str:
 # Session segmenter
 # --------------------------------------------------------------------------- #
 
+
 def segment_session(path: str) -> List[dict]:
     """Parse one .jsonl file into a list of assistant burst dicts.
 
@@ -117,28 +120,30 @@ def segment_session(path: str) -> List[dict]:
         if role not in ("user", "assistant"):
             continue
 
-        is_sc   = bool(rec.get("isSidechain"))
+        is_sc = bool(rec.get("isSidechain"))
         is_meta = bool(rec.get("isMeta"))
-        text    = _get_text(rec).strip()
-        is_tr   = _is_tool_result(rec) if role == "user" else False
+        text = _get_text(rec).strip()
+        is_tr = _is_tool_result(rec) if role == "user" else False
 
-        records.append({
-            "role":          role,
-            "text":          text,
-            "is_sidechain":  is_sc,
-            "is_meta":       is_meta,
-            "is_tool_result": is_tr,
-            "uuid":          rec.get("uuid", ""),
-            "ts":            rec.get("timestamp", ""),
-        })
+        records.append(
+            {
+                "role": role,
+                "text": text,
+                "is_sidechain": is_sc,
+                "is_meta": is_meta,
+                "is_tool_result": is_tr,
+                "uuid": rec.get("uuid", ""),
+                "ts": rec.get("timestamp", ""),
+            }
+        )
 
     # Segment into bursts using a state machine.
     # Interrupt markers are user-type lines we skip in burst-boundary logic but
     # use to set the interrupt_preceding flag for the NEXT real user prompt.
     bursts: List[dict] = []
-    cur_burst:  List[str] = []
-    cur_uuids:  List[str] = []
-    preceding:  Optional[dict] = None
+    cur_burst: List[str] = []
+    cur_uuids: List[str] = []
+    preceding: Optional[dict] = None
     pending_interrupt = False
 
     for r in records:
@@ -176,16 +181,18 @@ def segment_session(path: str) -> List[dict]:
 
             # Real user prompt — close the current burst (if any) and start next.
             if cur_burst:
-                bursts.append({
-                    "preceding_user":    preceding,
-                    "assistant_turns":   list(cur_burst),
-                    "turn_uuids":        list(cur_uuids),
-                    "following_user":    r,
-                    "interrupt_preceding": pending_interrupt,
-                })
-                cur_burst  = []
-                cur_uuids  = []
-            preceding         = r
+                bursts.append(
+                    {
+                        "preceding_user": preceding,
+                        "assistant_turns": list(cur_burst),
+                        "turn_uuids": list(cur_uuids),
+                        "following_user": r,
+                        "interrupt_preceding": pending_interrupt,
+                    }
+                )
+                cur_burst = []
+                cur_uuids = []
+            preceding = r
             pending_interrupt = False
 
         elif r["role"] == "assistant":
@@ -196,13 +203,15 @@ def segment_session(path: str) -> List[dict]:
 
     # Final burst is right-censored (no following user prompt).
     if cur_burst:
-        bursts.append({
-            "preceding_user":    preceding,
-            "assistant_turns":   list(cur_burst),
-            "turn_uuids":        list(cur_uuids),
-            "following_user":    None,
-            "interrupt_preceding": pending_interrupt,
-        })
+        bursts.append(
+            {
+                "preceding_user": preceding,
+                "assistant_turns": list(cur_burst),
+                "turn_uuids": list(cur_uuids),
+                "following_user": None,
+                "interrupt_preceding": pending_interrupt,
+            }
+        )
 
     return bursts
 
@@ -211,24 +220,43 @@ def segment_session(path: str) -> List[dict]:
 # Label assignment
 # --------------------------------------------------------------------------- #
 
+
 def _label_burst(burst: dict, window: int, next_burst: Optional[dict]) -> dict:
     """Return (label, label_subtype, label_hop, confidence)."""
     following = burst["following_user"]
-    interrupt  = burst["interrupt_preceding"]
+    interrupt = burst["interrupt_preceding"]
 
     if following is None:
-        return dict(label="unlabeled", label_subtype="censored",
-                    label_hop=None, confidence=1.0)
+        return dict(
+            label="unlabeled", label_subtype="censored", label_hop=None, confidence=1.0
+        )
 
     following_text = following["text"]
     subtype = classify_user_reply(following_text, interrupt_preceding=interrupt)
 
-    _STRONG_APPROVALS = frozenset(["yes", "yeah", "yep", "yup", "lgtm", "perfect",
-                                    "great", "good", "nice", "cool", "correct"])
+    _STRONG_APPROVALS = frozenset(
+        [
+            "yes",
+            "yeah",
+            "yep",
+            "yup",
+            "lgtm",
+            "perfect",
+            "great",
+            "good",
+            "nice",
+            "cool",
+            "correct",
+        ]
+    )
 
     if subtype in ("correction_style", "correction_substance", "frustration"):
         hop = 1
-    elif subtype in ("approval", "continuation", "new_task") and window >= 2 and next_burst:
+    elif (
+        subtype in ("approval", "continuation", "new_task")
+        and window >= 2
+        and next_burst
+    ):
         # W=2: check one burst further — but ONLY for "new_task" hops.
         # If the user's immediate reaction is an approval ("yes ...", "great", single-word
         # continuation like "go") the burst was accepted; don't propagate blame backwards.
@@ -238,8 +266,10 @@ def _label_burst(burst: dict, window: int, next_burst: Optional[dict]) -> dict:
         if not _skip_w2:
             next_following = next_burst.get("following_user")
             if next_following:
-                st2 = classify_user_reply(next_following["text"],
-                                          interrupt_preceding=next_burst.get("interrupt_preceding", False))
+                st2 = classify_user_reply(
+                    next_following["text"],
+                    interrupt_preceding=next_burst.get("interrupt_preceding", False),
+                )
                 if st2 in ("correction_style", "correction_substance", "frustration"):
                     subtype = st2
                     hop = 2
@@ -258,20 +288,26 @@ def _label_burst(burst: dict, window: int, next_burst: Optional[dict]) -> dict:
         label = "ok"
 
     # Confidence: higher for hard signals
-    if interrupt or (following_text and following_text.split()[0].lower() in
-                     {"no", "nope", "stop", "wait", "undo", "revert", "wrong"}):
+    if interrupt or (
+        following_text
+        and following_text.split()[0].lower()
+        in {"no", "nope", "stop", "wait", "undo", "revert", "wrong"}
+    ):
         confidence = 1.0
     elif subtype in ("correction_style", "correction_substance"):
         confidence = 0.8
     else:
         confidence = 0.9
 
-    return dict(label=label, label_subtype=subtype, label_hop=hop, confidence=confidence)
+    return dict(
+        label=label, label_subtype=subtype, label_hop=hop, confidence=confidence
+    )
 
 
 # --------------------------------------------------------------------------- #
 # Corpus builder
 # --------------------------------------------------------------------------- #
+
 
 def extract_corpus(
     projects_dir: str,
@@ -287,9 +323,10 @@ def extract_corpus(
     # are ~10-100 KB. This ensures real sessions are processed first when max_sessions
     # is used, and avoids wasting quota on tiny non-standard files.
     pattern = os.path.join(projects_dir, "*", "*.jsonl")
-    files   = sorted(
+    files = sorted(
         (f for f in glob.glob(pattern) if "/subagents/" not in f),
-        key=os.path.getsize, reverse=True,
+        key=os.path.getsize,
+        reverse=True,
     )
 
     for path in files:
@@ -301,40 +338,48 @@ def extract_corpus(
             continue
         session_count += 1
 
-        base       = os.path.basename(path)
+        base = os.path.basename(path)
         session_id = base.replace(".jsonl", "")
 
         for i, burst in enumerate(bursts):
             next_b = bursts[i + 1] if i + 1 < len(bursts) else None
-            lb     = _label_burst(burst, window, next_b)
+            lb = _label_burst(burst, window, next_b)
 
-            entries.append({
-                "id":                      f"real_{session_id[:8]}_{i}",
-                "source_file":             path,
-                "session_id":              session_id,
-                "cwd":                     None,
-                "git_branch":              None,
-                "burst_index":             i,
-                "assistant_turns":         burst["assistant_turns"],
-                "turn_uuids":              burst["turn_uuids"],
-                "preceding_user_prompt":   burst["preceding_user"]["text"] if burst["preceding_user"] else None,
-                "following_user_prompt":   burst["following_user"]["text"] if burst["following_user"] else None,
-                "following_user_uuid":     burst["following_user"]["uuid"] if burst["following_user"] else None,
-                "interrupt_preceding":     burst["interrupt_preceding"],
-                "label":                   lb["label"],
-                "label_subtype":           lb["label_subtype"],
-                "label_source":            "lexical",
-                "label_hop":               lb["label_hop"],
-                "correction_window":       window,
-                "expected_should_correct": lb["label"] == "drift",
-                "confidence":              lb["confidence"],
-                "extracted_at":            extracted_at,
-                "engine_version_at_extraction": None,
-                # Synthetic-corpus compat fields (null for real sessions)
-                "drift_type":              None,
-                "targets_blind_spot":      None,
-                "expected_trajectory":     None,
-            })
+            entries.append(
+                {
+                    "id": f"real_{session_id[:8]}_{i}",
+                    "source_file": path,
+                    "session_id": session_id,
+                    "cwd": None,
+                    "git_branch": None,
+                    "burst_index": i,
+                    "assistant_turns": burst["assistant_turns"],
+                    "turn_uuids": burst["turn_uuids"],
+                    "preceding_user_prompt": burst["preceding_user"]["text"]
+                    if burst["preceding_user"]
+                    else None,
+                    "following_user_prompt": burst["following_user"]["text"]
+                    if burst["following_user"]
+                    else None,
+                    "following_user_uuid": burst["following_user"]["uuid"]
+                    if burst["following_user"]
+                    else None,
+                    "interrupt_preceding": burst["interrupt_preceding"],
+                    "label": lb["label"],
+                    "label_subtype": lb["label_subtype"],
+                    "label_source": "lexical",
+                    "label_hop": lb["label_hop"],
+                    "correction_window": window,
+                    "expected_should_correct": lb["label"] == "drift",
+                    "confidence": lb["confidence"],
+                    "extracted_at": extracted_at,
+                    "engine_version_at_extraction": None,
+                    # Synthetic-corpus compat fields (null for real sessions)
+                    "drift_type": None,
+                    "targets_blind_spot": None,
+                    "expected_trajectory": None,
+                }
+            )
 
     return entries, session_count
 
@@ -343,36 +388,54 @@ def extract_corpus(
 # Main
 # --------------------------------------------------------------------------- #
 
+
 def main():
     ap = argparse.ArgumentParser(
-        description="Build real-session eval corpus from Claude Code transcripts")
-    ap.add_argument("--projects-dir",
-                    default=os.path.expanduser("~/.claude/projects"),
-                    help="Root of Claude Code projects (default: ~/.claude/projects)")
-    ap.add_argument("--out",
-                    default=os.path.join(_REPO, "eval_real_corpus.json"),
-                    help="Output path (default: <repo>/eval_real_corpus.json)")
-    ap.add_argument("--window", type=int, default=2, choices=[1, 2],
-                    help="Correction-window size in user prompts (default: 2)")
-    ap.add_argument("--max-sessions", type=int, default=None,
-                    help="Cap session count — for smoke runs")
+        description="Build real-session eval corpus from Claude Code transcripts"
+    )
+    ap.add_argument(
+        "--projects-dir",
+        default=os.path.expanduser("~/.claude/projects"),
+        help="Root of Claude Code projects (default: ~/.claude/projects)",
+    )
+    ap.add_argument(
+        "--out",
+        default=os.path.join(_REPO, "eval_real_corpus.json"),
+        help="Output path (default: <repo>/eval_real_corpus.json)",
+    )
+    ap.add_argument(
+        "--window",
+        type=int,
+        default=2,
+        choices=[1, 2],
+        help="Correction-window size in user prompts (default: 2)",
+    )
+    ap.add_argument(
+        "--max-sessions",
+        type=int,
+        default=None,
+        help="Cap session count — for smoke runs",
+    )
     args = ap.parse_args()
 
     if not os.path.isdir(args.projects_dir):
-        print(f"extract_real_corpus: projects dir not found: {args.projects_dir}",
-              file=sys.stderr)
+        print(
+            f"extract_real_corpus: projects dir not found: {args.projects_dir}",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     extracted_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     entries, session_count = extract_corpus(
-        args.projects_dir, args.max_sessions, args.window, extracted_at)
+        args.projects_dir, args.max_sessions, args.window, extracted_at
+    )
 
     # Sort for determinism
     entries.sort(key=lambda e: (e["session_id"], e["burst_index"]))
 
-    n       = len(entries)
+    n = len(entries)
     drift_n = sum(1 for e in entries if e["label"] == "drift")
-    ok_n    = sum(1 for e in entries if e["label"] == "ok")
+    ok_n = sum(1 for e in entries if e["label"] == "ok")
     unlab_n = sum(1 for e in entries if e["label"] == "unlabeled")
 
     print(

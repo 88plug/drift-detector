@@ -65,7 +65,9 @@ def check_no_root_manifest():
     """The Claude Code spec defines no root-level plugin.json; nothing reads one.
     There must be exactly ONE manifest, at .claude-plugin/plugin.json."""
     if os.path.isfile(os.path.join(ROOT, "plugin.json")):
-        fail("root plugin.json must not exist (spec defines none; use .claude-plugin/plugin.json)")
+        fail(
+            "root plugin.json must not exist (spec defines none; use .claude-plugin/plugin.json)"
+        )
     else:
         ok("no root plugin.json (single-manifest layout)")
 
@@ -84,7 +86,9 @@ def check_manifest(rel):
     if data.get("name") and data["name"] != "drift-detector":
         fail(f"{rel}: name must be 'drift-detector'")
     if len(data.get("keywords", [])) != 20:
-        fail(f"{rel}: keywords must be exactly 20 (found {len(data.get('keywords', []))})")
+        fail(
+            f"{rel}: keywords must be exactly 20 (found {len(data.get('keywords', []))})"
+        )
     hooks = data.get("hooks")
     if isinstance(hooks, str):
         hp = os.path.join(ROOT, hooks.lstrip("./"))
@@ -197,6 +201,7 @@ def check_bash_syntax():
 
 def check_python_syntax():
     import py_compile
+
     for dirpath, _dirs, files in os.walk(ROOT):
         if "/.git" in dirpath or "__pycache__" in dirpath:
             continue
@@ -216,8 +221,9 @@ def check_engine():
     if not os.path.isfile(eng):
         fail("engine missing: src/lib/drift_score.py")
         return
-    r = subprocess.run([sys.executable, eng, "--selftest"],
-                       capture_output=True, text=True)
+    r = subprocess.run(
+        [sys.executable, eng, "--selftest"], capture_output=True, text=True
+    )
     if r.returncode != 0:
         fail(f"engine selftest failed: {r.stderr.strip() or r.stdout.strip()}")
     else:

@@ -24,15 +24,15 @@ from statistics import mean
 
 @dataclass
 class DriftClassification:
-    drift_type: str       # "none" | "adaptive" | "degenerative"
+    drift_type: str  # "none" | "adaptive" | "degenerative"
     should_correct: bool  # True only for degenerative
-    confidence: float     # 0.0-1.0
+    confidence: float  # 0.0-1.0
     rationale: str
 
 
 def classify_drift(
     current_score: float,
-    recent_scores: list[float],   # last 5 turns before current
+    recent_scores: list[float],  # last 5 turns before current
     threshold: float = 70.0,
 ) -> DriftClassification:
     """Classify drift as adaptive or degenerative.
@@ -170,8 +170,10 @@ if __name__ == "__main__":
 
     def show(label: str, c: DriftClassification) -> None:
         print(f"  [{label}]")
-        print(f"    type={c.drift_type} correct={c.should_correct} "
-              f"conf={c.confidence:.2f}")
+        print(
+            f"    type={c.drift_type} correct={c.should_correct} "
+            f"conf={c.confidence:.2f}"
+        )
         print(f"    {c.rationale}")
 
     print("=== classify_drift selftest ===\n")
@@ -180,16 +182,21 @@ if __name__ == "__main__":
     show("none", classify_drift(40.0, [30.0, 35.0, 42.0, 38.0, 41.0]))
 
     # 2. Adaptive: isolated spike surrounded by compliance.
-    show("adaptive (isolated spike)",
-         classify_drift(85.0, [30.0, 35.0, 40.0, 38.0, 33.0]))
+    show(
+        "adaptive (isolated spike)",
+        classify_drift(85.0, [30.0, 35.0, 40.0, 38.0, 33.0]),
+    )
 
     # 3. Adaptive: minor transgression off a strong baseline.
-    show("adaptive (minor off strong baseline)",
-         classify_drift(74.0, [20.0, 25.0, 22.0, 28.0, 24.0]))
+    show(
+        "adaptive (minor off strong baseline)",
+        classify_drift(74.0, [20.0, 25.0, 22.0, 28.0, 24.0]),
+    )
 
     # 4. Degenerative: sustained drift, no return to baseline.
-    show("degenerative (sustained)",
-         classify_drift(88.0, [72.0, 78.0, 81.0, 85.0, 84.0]))
+    show(
+        "degenerative (sustained)", classify_drift(88.0, [72.0, 78.0, 81.0, 85.0, 84.0])
+    )
 
     # 5. Degenerative: drifting with too little history.
     show("degenerative (no history)", classify_drift(90.0, [88.0]))
@@ -206,32 +213,44 @@ if __name__ == "__main__":
 
     # Adaptive drift -> never inject, regardless of cooldown.
     r1 = should_inject_correction(
-        current_score=85.0, recent_scores=[30.0, 33.0],
-        last_correction_turn=-1, current_turn=10, cooldown_turns=3,
+        current_score=85.0,
+        recent_scores=[30.0, 33.0],
+        last_correction_turn=-1,
+        current_turn=10,
+        cooldown_turns=3,
     )
     print(f"  adaptive drift, no prior correction -> inject={r1} (want False)")
     assert r1 is False
 
     # Degenerative drift, cooldown elapsed -> inject.
     r2 = should_inject_correction(
-        current_score=88.0, recent_scores=[72.0, 85.0],
-        last_correction_turn=5, current_turn=10, cooldown_turns=3,
+        current_score=88.0,
+        recent_scores=[72.0, 85.0],
+        last_correction_turn=5,
+        current_turn=10,
+        cooldown_turns=3,
     )
     print(f"  degenerative drift, cooldown elapsed -> inject={r2} (want True)")
     assert r2 is True
 
     # Degenerative drift, still in cooldown -> suppress.
     r3 = should_inject_correction(
-        current_score=88.0, recent_scores=[72.0, 85.0],
-        last_correction_turn=9, current_turn=10, cooldown_turns=3,
+        current_score=88.0,
+        recent_scores=[72.0, 85.0],
+        last_correction_turn=9,
+        current_turn=10,
+        cooldown_turns=3,
     )
     print(f"  degenerative drift, in cooldown    -> inject={r3} (want False)")
     assert r3 is False
 
     # Degenerative drift, no prior correction -> inject.
     r4 = should_inject_correction(
-        current_score=90.0, recent_scores=[88.0],
-        last_correction_turn=-1, current_turn=10, cooldown_turns=3,
+        current_score=90.0,
+        recent_scores=[88.0],
+        last_correction_turn=-1,
+        current_turn=10,
+        cooldown_turns=3,
     )
     print(f"  degenerative drift, no prior corr  -> inject={r4} (want True)")
     assert r4 is True

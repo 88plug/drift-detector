@@ -121,7 +121,9 @@ def validate(profile: dict) -> List[str]:
         errs.append("'lexicons' must be an object of class -> [terms]")
     else:
         for cls, terms in lex.items():
-            if not isinstance(terms, list) or not all(isinstance(t, str) for t in terms):
+            if not isinstance(terms, list) or not all(
+                isinstance(t, str) for t in terms
+            ):
                 errs.append(f"lexicon '{cls}' must be a list of strings")
 
     if kind == "judge":
@@ -187,4 +189,5 @@ def _main() -> int:
 
 if __name__ == "__main__":
     import sys
+
     sys.exit(_main())

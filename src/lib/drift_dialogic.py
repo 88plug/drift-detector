@@ -36,7 +36,6 @@ from drift_score import (
     DEFAULT_LEXICONS,
     _FENCE_RE,
     _INLINE_CODE_RE,
-    sentences,
     strip_code,
     tokenize,
 )
@@ -61,19 +60,64 @@ _LEADING_NUMBER_RE = re.compile(r"^\s*[\(\[\"']?\d")
 _LEADING_DATE_RE = re.compile(r"^\s*\d{4}-\d{2}-\d{2}")
 _IMPERATIVE_VERBS = frozenset(
     {
-        "use", "run", "set", "add", "remove", "delete", "change", "edit", "open",
-        "close", "fix", "check", "call", "import", "install", "create", "make",
-        "move", "copy", "rename", "replace", "update", "build", "start", "stop",
-        "restart", "enable", "disable", "configure", "deploy", "commit", "push",
-        "pull", "merge", "revert", "apply", "patch", "see", "read", "write",
-        "click", "select", "drop", "rename", "kill", "grep", "cat", "cd", "echo",
+        "use",
+        "run",
+        "set",
+        "add",
+        "remove",
+        "delete",
+        "change",
+        "edit",
+        "open",
+        "close",
+        "fix",
+        "check",
+        "call",
+        "import",
+        "install",
+        "create",
+        "make",
+        "move",
+        "copy",
+        "rename",
+        "replace",
+        "update",
+        "build",
+        "start",
+        "stop",
+        "restart",
+        "enable",
+        "disable",
+        "configure",
+        "deploy",
+        "commit",
+        "push",
+        "pull",
+        "merge",
+        "revert",
+        "apply",
+        "patch",
+        "see",
+        "read",
+        "write",
+        "click",
+        "select",
+        "drop",
+        "rename",
+        "kill",
+        "grep",
+        "cat",
+        "cd",
+        "echo",
     }
 )
 
 # File paths, URLs, shell commands — concrete artifacts the user can act on.
 _PATH_RE = re.compile(r"(?:(?:\.{0,2}/)[\w./\-]+|[\w\-]+\.[A-Za-z]{1,5}\b)")
 _URL_RE = re.compile(r"https?://\S+")
-_CMD_RE = re.compile(r"\$\s*\S+|\b(?:git|npm|pip|cargo|docker|kubectl|ssh|curl|make)\s+\S")
+_CMD_RE = re.compile(
+    r"\$\s*\S+|\b(?:git|npm|pip|cargo|docker|kubectl|ssh|curl|make)\s+\S"
+)
 
 # A "recommendation" pattern: use X / run Y / change Z / try W / should ...
 _RECO_RE = re.compile(
@@ -89,10 +133,10 @@ _HEDGE_TERMS = tuple(DEFAULT_LEXICONS["hedges"])
 
 @dataclass
 class DialogicScore:
-    fidelity: float      # 0-100, higher = more contract-compliant (100 = perfect)
-    engagement: float    # 0-100, higher = more task-engaged
-    badge: str           # e.g. "fit:88 eng:72" or "DRIFT:45 eng:91"
-    quadrant: str        # "good"|"drifted"|"disengaged"|"dead"
+    fidelity: float  # 0-100, higher = more contract-compliant (100 = perfect)
+    engagement: float  # 0-100, higher = more task-engaged
+    badge: str  # e.g. "fit:88 eng:72" or "DRIFT:45 eng:91"
+    quadrant: str  # "good"|"drifted"|"disengaged"|"dead"
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -117,9 +161,27 @@ def _starts_with_direct_answer(prose: str) -> bool:
     m = re.match(r"\s*([A-Z][A-Za-z0-9_\-]+)", prose)
     if m:
         lead = m.group(1).lower()
-        if lead not in {"perhaps", "maybe", "well", "so", "actually", "honestly",
-                        "basically", "essentially", "i", "it", "there", "this",
-                        "that", "the", "a", "an", "we", "you", "let"}:
+        if lead not in {
+            "perhaps",
+            "maybe",
+            "well",
+            "so",
+            "actually",
+            "honestly",
+            "basically",
+            "essentially",
+            "i",
+            "it",
+            "there",
+            "this",
+            "that",
+            "the",
+            "a",
+            "an",
+            "we",
+            "you",
+            "let",
+        }:
             return True
     return False
 
@@ -339,9 +401,10 @@ def _selftest() -> int:
     assert score_engagement("") == 0.0
     assert score_engagement(None) == 0.0  # type: ignore[arg-type]
     # All-hedge no-action is firmly disengaged.
-    assert score_engagement(
-        "perhaps maybe possibly i think it seems somewhat unclear"
-    ) < 50.0
+    assert (
+        score_engagement("perhaps maybe possibly i think it seems somewhat unclear")
+        < 50.0
+    )
 
     # Determinism.
     assert score_engagement(drifted.badge) == score_engagement(drifted.badge)

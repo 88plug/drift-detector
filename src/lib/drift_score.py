@@ -33,7 +33,7 @@ import math
 import re
 import unicodedata
 from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 ENGINE_VERSION = "1.0.0"
 
@@ -85,39 +85,103 @@ def sentences(text: str) -> List[str]:
 DEFAULT_LEXICONS: Dict[str, List[str]] = {
     # Hedging / soft qualifiers — the hallmark of an un-caveman relapse.
     "hedges": [
-        "perhaps", "maybe", "possibly", "arguably", "presumably", "essentially",
-        "basically", "generally", "typically", "usually", "somewhat", "fairly",
-        "relatively", "kind of", "sort of", "i think", "i believe", "it seems",
-        "it appears", "in my opinion", "to some extent", "more or less",
-        "worth noting", "it is worth", "one thing to", "to be clear",
-        "i should mention", "having said that", "that said", "with that in mind",
-        "all things considered", "at the end of the day", "in other words",
-        "to put it another way", "it should be noted", "needless to say",
+        "perhaps",
+        "maybe",
+        "possibly",
+        "arguably",
+        "presumably",
+        "essentially",
+        "basically",
+        "generally",
+        "typically",
+        "usually",
+        "somewhat",
+        "fairly",
+        "relatively",
+        "kind of",
+        "sort of",
+        "i think",
+        "i believe",
+        "it seems",
+        "it appears",
+        "in my opinion",
+        "to some extent",
+        "more or less",
+        "worth noting",
+        "it is worth",
+        "one thing to",
+        "to be clear",
+        "i should mention",
+        "having said that",
+        "that said",
+        "with that in mind",
+        "all things considered",
+        "at the end of the day",
+        "in other words",
+        "to put it another way",
+        "it should be noted",
+        "needless to say",
         # Paraphrase hedges: indirect/impersonal qualifiers that carry the same
         # epistemic-softening function as the single-word hedges above but evade a
         # token-only matcher. These are register tells of assistant-voice relapse
         # ("one might venture...", "it would appear that...") with no dominant
         # legitimate terse-technical sense, so they are safe to count directly.
-        "one might", "one could", "it would appear", "it would seem",
-        "it is clear that", "goes without saying", "of note", "it is evident",
-        "it bears mentioning", "worth mentioning",
+        "one might",
+        "one could",
+        "it would appear",
+        "it would seem",
+        "it is clear that",
+        "goes without saying",
+        "of note",
+        "it is evident",
+        "it bears mentioning",
+        "worth mentioning",
         # Impersonal-epistemic paraphrases: the "evasive reviewer" register where
         # the assistant softens a claim by routing it through an impersonal frame
         # ("as far as one can tell...", "in all likelihood..."). Same epistemic-
         # softening function as the hedges above; none has a terse-technical sense.
-        "in all likelihood", "as far as one can tell", "to the best of my",
-        "on the whole", "from where things stand", "more often than not",
+        "in all likelihood",
+        "as far as one can tell",
+        "to the best of my",
+        "on the whole",
+        "from where things stand",
+        "more often than not",
         "all else being equal",
     ],
     # Politeness / filler the persona is supposed to drop.
     "filler": [
-        "please", "thank you", "thanks", "certainly", "absolutely", "of course",
-        "feel free", "happy to help", "let me", "i would be", "i'd be glad",
-        "great question", "good question", "as you can see", "as mentioned",
-        "i hope this helps", "let me know", "just", "actually", "simply",
-        "i appreciate", "thank you for", "great point", "you are right",
-        "absolutely right", "fair point", "good catch", "no problem",
-        "my pleasure", "you are welcome", "i understand", "i see",
+        "please",
+        "thank you",
+        "thanks",
+        "certainly",
+        "absolutely",
+        "of course",
+        "feel free",
+        "happy to help",
+        "let me",
+        "i would be",
+        "i'd be glad",
+        "great question",
+        "good question",
+        "as you can see",
+        "as mentioned",
+        "i hope this helps",
+        "let me know",
+        "just",
+        "actually",
+        "simply",
+        "i appreciate",
+        "thank you for",
+        "great point",
+        "you are right",
+        "absolutely right",
+        "fair point",
+        "good catch",
+        "no problem",
+        "my pleasure",
+        "you are welcome",
+        "i understand",
+        "i see",
         # Ordinal-enumeration scaffolding: comma-delimited sequence openers
         # ("First, the ...", "Second, it ...") are a reliable tell of an
         # assistant narrating a formal numbered walkthrough — structured prose
@@ -126,25 +190,65 @@ DEFAULT_LEXICONS: Dict[str, List[str]] = {
         # because they carry dominant technical senses (first byte, second
         # argument, first-in-first-out). "in order to" / "in the following" are
         # formal purpose/preamble constructions with the same register tell.
-        "first, the", "second, the", "third, the", "first, it", "second, it",
-        "firstly,", "secondly,", "in order to", "in the following",
+        "first, the",
+        "second, the",
+        "third, the",
+        "first, it",
+        "second, it",
+        "firstly,",
+        "secondly,",
+        "in order to",
+        "in the following",
     ],
     # Marketing / hype — explicitly banned by the README standard too.
     "hype": [
-        "seamless", "powerful", "robust", "cutting edge", "state of the art",
-        "blazing", "blazingly", "revolutionary", "game changer", "leverage",
-        "synergy", "best in class", "world class", "next generation", "elegant",
-        "delightful", "effortless", "unparalleled", "industry leading",
+        "seamless",
+        "powerful",
+        "robust",
+        "cutting edge",
+        "state of the art",
+        "blazing",
+        "blazingly",
+        "revolutionary",
+        "game changer",
+        "leverage",
+        "synergy",
+        "best in class",
+        "world class",
+        "next generation",
+        "elegant",
+        "delightful",
+        "effortless",
+        "unparalleled",
+        "industry leading",
     ],
     # Meta-narration: the model describing what it is about to do instead of
     # doing it. A strong verbosity tell.
     "meta": [
-        "let's dive", "let us dive", "in this section", "first, we", "to summarize",
-        "in summary", "in conclusion", "to recap", "as an ai", "i'll walk you",
-        "let me explain", "let me break", "here's a breakdown", "step by step",
-        "allow me to", "permit me to", "i would like to", "if i may",
-        "to give you a", "to provide", "let me share", "i want to",
-        "what i mean is", "what this means",
+        "let's dive",
+        "let us dive",
+        "in this section",
+        "first, we",
+        "to summarize",
+        "in summary",
+        "in conclusion",
+        "to recap",
+        "as an ai",
+        "i'll walk you",
+        "let me explain",
+        "let me break",
+        "here's a breakdown",
+        "step by step",
+        "allow me to",
+        "permit me to",
+        "i would like to",
+        "if i may",
+        "to give you a",
+        "to provide",
+        "let me share",
+        "i want to",
+        "what i mean is",
+        "what this means",
     ],
 }
 
@@ -199,8 +303,8 @@ class Profile:
             "filler": 1.3,
             "hype": 1.5,
             "meta": 1.2,
-            "verbosity": 1.0,   # words-per-sentence pressure
-            "length": 0.8,      # absolute prose length pressure
+            "verbosity": 1.0,  # words-per-sentence pressure
+            "length": 0.8,  # absolute prose length pressure
             "complexity": 0.7,  # long-word ratio
         }
     )
@@ -321,15 +425,15 @@ def _count_class(text_lc: str, tokens: List[str], token_set, terms: List[str]) -
 @dataclass
 class DriftResult:
     score: float
-    verdict: str            # "ok" | "drift"
+    verdict: str  # "ok" | "drift"
     threshold: float
     profile: str
     engine_version: str
-    components: Dict[str, float]      # raw 0..1 per component (pre-weight)
+    components: Dict[str, float]  # raw 0..1 per component (pre-weight)
     contributions: Dict[str, float]  # weighted points added to the 0..100 score
-    markers: Dict[str, int]          # per-class hit counts
-    stats: Dict[str, float]          # prose stats (word_count, wps, etc.)
-    top_offenders: List[str]         # human-readable biggest contributors
+    markers: Dict[str, int]  # per-class hit counts
+    stats: Dict[str, float]  # prose stats (word_count, wps, etc.)
+    top_offenders: List[str]  # human-readable biggest contributors
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -364,8 +468,12 @@ def analyze(text: str, profile: Optional[Profile] = None) -> DriftResult:
             components={},
             contributions={},
             markers={},
-            stats={"word_count": 0.0, "sentence_count": 0.0, "words_per_sentence": 0.0,
-                   "long_word_ratio": 0.0},
+            stats={
+                "word_count": 0.0,
+                "sentence_count": 0.0,
+                "words_per_sentence": 0.0,
+                "long_word_ratio": 0.0,
+            },
             top_offenders=[],
         )
 
@@ -397,9 +505,7 @@ def analyze(text: str, profile: Optional[Profile] = None) -> DriftResult:
     for cls, terms in lexicons.items():
         hits = _count_class(text_lc, tokens, freq, terms)
         markers[cls] = hits
-        poly = sum(
-            freq.get(t, 0) for t in terms if t in _POLYSEMOUS_TERMS
-        )
+        poly = sum(freq.get(t, 0) for t in terms if t in _POLYSEMOUS_TERMS)
         if poly:
             polysemous_hits[cls] = poly
 
@@ -418,8 +524,7 @@ def analyze(text: str, profile: Optional[Profile] = None) -> DriftResult:
     # cluster, and length already covers genuine assistant-voice bloat.
     if polysemous_hits:
         non_poly_lexical = sum(
-            markers.get(cls, 0) - polysemous_hits.get(cls, 0)
-            for cls in lexicons
+            markers.get(cls, 0) - polysemous_hits.get(cls, 0) for cls in lexicons
         )
         corroborated = non_poly_lexical > 0 or components["length"] >= 0.2
         if not corroborated:
@@ -477,7 +582,7 @@ def analyze(text: str, profile: Optional[Profile] = None) -> DriftResult:
             p = value * (w / max_w)
             p = max(0.0, min(0.999, p))
             eff[comp] = p
-            prod_keep *= (1.0 - p)
+            prod_keep *= 1.0 - p
 
     base = 1.0 - prod_keep  # 0..1 noisy-OR
     scaled = base * 100.0 * prof.sensitivity

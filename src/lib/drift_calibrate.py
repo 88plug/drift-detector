@@ -46,10 +46,10 @@ except ImportError:  # direct execution (python drift_calibrate.py)
 # These are headroom factors, NOT register assumptions: they say "allow this
 # much above what the session already does" rather than "this many words".
 # --------------------------------------------------------------------------- #
-_WPS_TARGET_MULT = 1.3   # 30% headroom above established words-per-sentence
-_WPS_MAX_MULT = 3.0      # verbosity saturates at 3x the target
+_WPS_TARGET_MULT = 1.3  # 30% headroom above established words-per-sentence
+_WPS_MAX_MULT = 3.0  # verbosity saturates at 3x the target
 _WORDS_TARGET_MULT = 1.5  # 50% headroom above established turn length
-_WORDS_MAX_MULT = 4.0     # length saturates at 4x the target
+_WORDS_MAX_MULT = 4.0  # length saturates at 4x the target
 
 # Clamps — keep calibration sane even on a pathological early sample. These
 # bracket the same ranges Profile.from_dict accepts.
@@ -214,8 +214,13 @@ def _selftest() -> int:
     assert estimate_baseline_from_turns(None) is None  # type: ignore[arg-type]
 
     # A terse session calibrates to a tight (clamped-low) baseline.
-    terse = ["fix bug.", "line 42 null check.", "done.", "ran tests. pass.",
-             "shipped it."]
+    terse = [
+        "fix bug.",
+        "line 42 null check.",
+        "done.",
+        "ran tests. pass.",
+        "shipped it.",
+    ]
     cal_terse = estimate_baseline_from_turns(terse)
     assert cal_terse is not None
     # All four keys present.
@@ -239,7 +244,8 @@ def _selftest() -> int:
     cal_verbose = estimate_baseline_from_turns(verbose)
     assert cal_verbose is not None
     assert cal_verbose["target_words"] >= cal_terse["target_words"], (
-        cal_verbose, cal_terse
+        cal_verbose,
+        cal_terse,
     )
 
     # Determinism.
@@ -250,9 +256,15 @@ def _selftest() -> int:
     assert estimate_baseline_from_turns(polluted, n_sample=5) == cal_terse
 
     # apply_calibration does not mutate and overrides only the four keys.
-    prof = {"name": "caveman", "threshold": 70.0, "target_wps": 8.0,
-            "max_wps": 28.0, "target_words": 40.0, "max_words": 400.0,
-            "sensitivity": 1.0}
+    prof = {
+        "name": "caveman",
+        "threshold": 70.0,
+        "target_wps": 8.0,
+        "max_wps": 28.0,
+        "target_words": 40.0,
+        "max_words": 400.0,
+        "sensitivity": 1.0,
+    }
     snapshot = dict(prof)
     merged = apply_calibration(prof, cal_terse)
     assert prof == snapshot, "input was mutated"
@@ -273,8 +285,12 @@ def _selftest() -> int:
         {"role": "user", "content": "do the thing"},
         {"role": "assistant", "content": "fix bug."},
         {"message": {"role": "assistant", "content": "line 42 null check."}},
-        {"message": {"role": "assistant", "content": [
-            {"type": "text", "text": "done."}]}},
+        {
+            "message": {
+                "role": "assistant",
+                "content": [{"type": "text", "text": "done."}],
+            }
+        },
         {"role": "assistant", "content": "ran tests. pass."},
         {"role": "assistant", "content": "shipped it."},
         {"role": "assistant", "content": "later verbose drift " * 30},
@@ -316,9 +332,7 @@ if __name__ == "__main__":
     import argparse
     import sys
 
-    ap = argparse.ArgumentParser(
-        description="drift-detector self-calibrating baseline"
-    )
+    ap = argparse.ArgumentParser(description="drift-detector self-calibrating baseline")
     ap.add_argument("--selftest", action="store_true", help="run built-in tests")
     ap.add_argument("--transcript", help="JSONL transcript path to calibrate from")
     ap.add_argument("--n-sample", type=int, default=5, help="early turns to sample")

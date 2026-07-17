@@ -24,6 +24,7 @@ Usage:
       --recall-db ~/.claude/plugins/data/total-recall/index.db \\
       --output /project/CLAUDE.md --cwd /home/andrew/my-project
 """
+
 from __future__ import annotations
 
 import argparse
@@ -37,43 +38,44 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
-_LIB  = os.path.join(os.path.dirname(_HERE), "src", "lib")
+_LIB = os.path.join(os.path.dirname(_HERE), "src", "lib")
 if _LIB not in sys.path:
     sys.path.insert(0, _LIB)
 
 try:
     from drift_user_correction import classify_user_reply, classify_mistake_type
+
     _HAS_CORRECTION_LIB = True
 except ImportError:
     _HAS_CORRECTION_LIB = False
 
 MARKER_START = "<!-- drift-detector:start -->"
-MARKER_END   = "<!-- drift-detector:end -->"
+MARKER_END = "<!-- drift-detector:end -->"
 
 # Human-readable labels for DB component keys.
 COMPONENT_LABELS: dict[str, str] = {
-    "verbosity":   "Verbosity (long sentences)",
-    "length":      "Response length",
-    "complexity":  "Sentence complexity",
-    "hedging":     "Hedging language",
-    "filler":      "Filler / pleasantry words",
-    "escalation":  "Uncertainty escalation",
+    "verbosity": "Verbosity (long sentences)",
+    "length": "Response length",
+    "complexity": "Sentence complexity",
+    "hedging": "Hedging language",
+    "filler": "Filler / pleasantry words",
+    "escalation": "Uncertainty escalation",
     "affirmation": "Sycophantic affirmations",
-    "meta":        "Meta-commentary about the task",
-    "passive":     "Passive / weak constructions",
+    "meta": "Meta-commentary about the task",
+    "passive": "Passive / weak constructions",
 }
 
 # Advice snippets keyed by component. Used to build actionable bullets.
 COMPONENT_ADVICE: dict[str, str] = {
-    "verbosity":   'Break sentences at conjunctions. Target ≤15 words/sentence.',
-    "length":      'Lead with the answer; cut trailing restatements.',
-    "complexity":  'Prefer parallel short clauses over embedded subordinates.',
-    "hedging":     'State directly. Drop "might", "could", "seems", "perhaps", "I think".',
-    "filler":      'Cut openers: "Sure!", "Certainly!", "Of course!", "Great question!".',
-    "escalation":  'Commit to an answer. Avoid stacking qualifiers.',
+    "verbosity": "Break sentences at conjunctions. Target ≤15 words/sentence.",
+    "length": "Lead with the answer; cut trailing restatements.",
+    "complexity": "Prefer parallel short clauses over embedded subordinates.",
+    "hedging": 'State directly. Drop "might", "could", "seems", "perhaps", "I think".',
+    "filler": 'Cut openers: "Sure!", "Certainly!", "Of course!", "Great question!".',
+    "escalation": "Commit to an answer. Avoid stacking qualifiers.",
     "affirmation": 'No mirror-validation before answering. Skip "That\'s a great point".',
-    "meta":        'Don\'t narrate the process ("I\'ll now look at…"). Just do the thing.',
-    "passive":     'Use active voice. Name the actor.',
+    "meta": "Don't narrate the process (\"I'll now look at…\"). Just do the thing.",
+    "passive": "Use active voice. Name the actor.",
 }
 
 
@@ -82,21 +84,21 @@ COMPONENT_ADVICE: dict[str, str] = {
 # --------------------------------------------------------------------------- #
 
 _MISTAKE_LABELS: dict[str, str] = {
-    "mcp_first_violation":  "Reach for the configured MCP, not generic shell",
-    "unverified_claim":     "Verify before asserting — fan out agents for high-stakes claims",
-    "wrong_target":         "Confirm the exact target (file/repo/host) before any irreversible op",
-    "premature_action":     "Never push, restart, or let jobs run unmonitored without explicit go-ahead",
-    "ignored_instruction":  "Apply a stated preference from the first time, not after being reminded",
-    "overengineering":      "KISS — prefer a one-liner solution over a complex one",
+    "mcp_first_violation": "Reach for the configured MCP, not generic shell",
+    "unverified_claim": "Verify before asserting — fan out agents for high-stakes claims",
+    "wrong_target": "Confirm the exact target (file/repo/host) before any irreversible op",
+    "premature_action": "Never push, restart, or let jobs run unmonitored without explicit go-ahead",
+    "ignored_instruction": "Apply a stated preference from the first time, not after being reminded",
+    "overengineering": "KISS — prefer a one-liner solution over a complex one",
 }
 
 _MISTAKE_SPOT: dict[str, str] = {
-    "mcp_first_violation":  "about to run generic Bash / give a text-only answer for a task an MCP tool owns.",
-    "unverified_claim":     "about to state a conclusion without having read the actual source / session logs.",
-    "wrong_target":         "about to Edit/Write/run a command on a path or host — confirm it matches what the user named.",
-    "premature_action":     "about to push, restart, deploy, or let a long job run without an explicit checkpoint.",
-    "ignored_instruction":  "about to do something the user has corrected before — check prior turns for stated preferences.",
-    "overengineering":      "solution has more moving parts than necessary — ask whether a simpler path exists first.",
+    "mcp_first_violation": "about to run generic Bash / give a text-only answer for a task an MCP tool owns.",
+    "unverified_claim": "about to state a conclusion without having read the actual source / session logs.",
+    "wrong_target": "about to Edit/Write/run a command on a path or host — confirm it matches what the user named.",
+    "premature_action": "about to push, restart, deploy, or let a long job run without an explicit checkpoint.",
+    "ignored_instruction": "about to do something the user has corrected before — check prior turns for stated preferences.",
+    "overengineering": "solution has more moving parts than necessary — ask whether a simpler path exists first.",
 }
 
 
@@ -149,7 +151,11 @@ def load_mistakes_from_recall(
             if not text:
                 continue
             subtype = classify_user_reply(text)
-            if subtype not in ("correction_style", "correction_substance", "frustration"):
+            if subtype not in (
+                "correction_style",
+                "correction_substance",
+                "frustration",
+            ):
                 continue
 
             # Find preceding assistant message in same source file
@@ -170,13 +176,15 @@ def load_mistakes_from_recall(
             if category == "other":
                 continue
 
-            corrections.append({
-                "category":        category,
-                "correction_text": text[:300],
-                "prior_text":      prior_text[:300],
-                "session_id":      row["session_id"],
-                "cwd":             row["cwd"],
-            })
+            corrections.append(
+                {
+                    "category": category,
+                    "correction_text": text[:300],
+                    "prior_text": prior_text[:300],
+                    "session_id": row["session_id"],
+                    "cwd": row["cwd"],
+                }
+            )
 
         return corrections
     except Exception:
@@ -187,7 +195,9 @@ def load_mistakes_from_recall(
 
 def tally_mistakes(corrections: list[dict]) -> dict[str, dict]:
     """Return {category: {count, sessions, examples}} ranked by distinct-session count."""
-    buckets: dict[str, dict] = defaultdict(lambda: {"count": 0, "sessions": set(), "examples": []})
+    buckets: dict[str, dict] = defaultdict(
+        lambda: {"count": 0, "sessions": set(), "examples": []}
+    )
     for c in corrections:
         cat = c["category"]
         buckets[cat]["count"] += 1
@@ -212,8 +222,8 @@ def build_mistake_bullets(mistakes: dict[str, dict]) -> str:
     lines = []
     for cat, stats in top:
         label = _MISTAKE_LABELS.get(cat, cat.replace("_", " ").title())
-        spot  = _MISTAKE_SPOT.get(cat, "")
-        sc    = stats["session_count"]
+        spot = _MISTAKE_SPOT.get(cat, "")
+        sc = stats["session_count"]
         lines.append(
             f"- **{label}** — recurred in {sc} session{'s' if sc != 1 else ''}. "
             f"Spot it: you are {spot}"
@@ -268,7 +278,9 @@ def load_session_stats(db_path: str, limit_sessions: int) -> dict:
             "sessions": len(rows),
             "total_turns": total_turns,
             "drift_turns": drift_turns,
-            "drift_rate": round(100 * drift_turns / total_turns, 1) if total_turns else 0,
+            "drift_rate": round(100 * drift_turns / total_turns, 1)
+            if total_turns
+            else 0,
         }
     finally:
         con.close()
@@ -322,7 +334,7 @@ def build_block(
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     n_sessions = stats.get("sessions", 0)
     drift_rate = stats.get("drift_rate", 0)
-    n_drifted  = len(drifted_turns)
+    n_drifted = len(drifted_turns)
     n_mistakes = sum(v["count"] for v in mistakes.values()) if mistakes else 0
 
     # ---- stylometric body ------------------------------------------------- #
@@ -333,20 +345,22 @@ def build_block(
         )
     else:
         comp_counts = tally_components(drifted_turns)
-        off_counts  = tally_offenders(drifted_turns)
+        off_counts = tally_offenders(drifted_turns)
         merged: dict[str, int] = defaultdict(int)
         for k, v in comp_counts.items():
             merged[k] += v * 2
         for k, v in off_counts.items():
             merged[k] += v
         ranked = sorted(merged.items(), key=lambda x: x[1], reverse=True)
-        top    = [(k, v) for k, v in ranked if v > 0][:5]
+        top = [(k, v) for k, v in ranked if v > 0][:5]
         bullets = []
         for cat, cnt in top:
-            pct    = round(100 * cnt / n_drifted / (2 if cat in comp_counts else 1))
-            label  = COMPONENT_LABELS.get(cat, cat.title())
+            pct = round(100 * cnt / n_drifted / (2 if cat in comp_counts else 1))
+            label = COMPONENT_LABELS.get(cat, cat.title())
             advice = COMPONENT_ADVICE.get(cat, "Reduce this pattern.")
-            bullets.append(f"- **{label}** (fires in ~{min(pct, 100)}% of drifted turns): {advice}")
+            bullets.append(
+                f"- **{label}** (fires in ~{min(pct, 100)}% of drifted turns): {advice}"
+            )
         stylometric_body = "\n".join(bullets)
 
     # ---- assemble block --------------------------------------------------- #
@@ -422,19 +436,42 @@ def update_file(output_path: str, block: str, dry_run: bool) -> str:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Auto-calibrate CLAUDE.md anti-drift section")
-    ap.add_argument("--db",       default=None, help="Path to drift.db (stylometric signal)")
-    ap.add_argument("--output",   required=True, help="Path to CLAUDE.md / AGENTS.md to update")
-    ap.add_argument("--sessions", type=int, default=50, help="Recent sessions to analyse (default 50)")
-    ap.add_argument("--dry-run",  action="store_true", help="Print block, don't write")
-    ap.add_argument("--min-drift-turns", type=int, default=5,
-                    help="Minimum drifted turns required to write non-trivial guidance (default 5)")
-    ap.add_argument("--recall-db", default=None,
-                    help="Path to total-recall index.db for mistake-based guidance")
-    ap.add_argument("--cwd",  default=None,
-                    help="Filter total-recall corrections to this project directory")
-    ap.add_argument("--days", type=int, default=90,
-                    help="How many days of total-recall history to scan (default 90)")
+    ap = argparse.ArgumentParser(
+        description="Auto-calibrate CLAUDE.md anti-drift section"
+    )
+    ap.add_argument("--db", default=None, help="Path to drift.db (stylometric signal)")
+    ap.add_argument(
+        "--output", required=True, help="Path to CLAUDE.md / AGENTS.md to update"
+    )
+    ap.add_argument(
+        "--sessions",
+        type=int,
+        default=50,
+        help="Recent sessions to analyse (default 50)",
+    )
+    ap.add_argument("--dry-run", action="store_true", help="Print block, don't write")
+    ap.add_argument(
+        "--min-drift-turns",
+        type=int,
+        default=5,
+        help="Minimum drifted turns required to write non-trivial guidance (default 5)",
+    )
+    ap.add_argument(
+        "--recall-db",
+        default=None,
+        help="Path to total-recall index.db for mistake-based guidance",
+    )
+    ap.add_argument(
+        "--cwd",
+        default=None,
+        help="Filter total-recall corrections to this project directory",
+    )
+    ap.add_argument(
+        "--days",
+        type=int,
+        default=90,
+        help="How many days of total-recall history to scan (default 90)",
+    )
     args = ap.parse_args()
 
     if not args.db and not args.recall_db:
@@ -442,7 +479,7 @@ def main() -> None:
         sys.exit(1)
 
     # --- Load stylometric signal -------------------------------------------
-    stats   = load_session_stats(args.db, args.sessions) if args.db else {}
+    stats = load_session_stats(args.db, args.sessions) if args.db else {}
     drifted = load_drifted_turns(args.db, args.sessions) if args.db else []
 
     if args.db and not stats:
@@ -461,7 +498,8 @@ def main() -> None:
     mistakes: dict[str, dict] | None = None
     if args.recall_db:
         corrections = load_mistakes_from_recall(
-            args.recall_db, cwd_filter=args.cwd, limit_days=args.days)
+            args.recall_db, cwd_filter=args.cwd, limit_days=args.days
+        )
         if len(set(c["session_id"] for c in corrections)) >= 3:
             mistakes = tally_mistakes(corrections)
         else:
