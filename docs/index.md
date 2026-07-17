@@ -3,7 +3,7 @@
 Catch the moment Claude stops following your output contract — and pull it back.
 
 [![plugin-validate](https://github.com/88plug/drift-detector/actions/workflows/plugin-validate.yml/badge.svg)](https://github.com/88plug/drift-detector/actions/workflows/plugin-validate.yml)
-[![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-blue?style=flat)](https://github.com/88plug/drift-detector/blob/main/LICENSE.md)
+[![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-blue?style=flat)](https://github.com/88plug/drift-detector/blob/main/LICENSE)
 [![Docs](https://img.shields.io/badge/docs-online-blue?style=flat)](https://88plug.github.io/drift-detector/)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2?style=flat)](https://github.com/88plug/claude-code-plugins)
 
@@ -171,4 +171,4 @@ bash scripts/run-python.sh scripts/adversarial_classify_test.py   # 37-case adve
 
 ## License
 
-[FSL-1.1-ALv2](https://github.com/88plug/drift-detector/blob/main/LICENSE.md) © 2026 88plug
+[FSL-1.1-ALv2](https://github.com/88plug/drift-detector/blob/main/LICENSE) © 2026 88plug
