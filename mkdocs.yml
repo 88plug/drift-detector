@@ -5,6 +5,7 @@ repo_url: https://github.com/88plug/drift-detector
 repo_name: 88plug/drift-detector
 edit_uri: edit/main/docs/
 use_directory_urls: true
+strict: true
 
 theme:
   name: material

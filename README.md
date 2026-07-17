@@ -1,16 +1,12 @@
-<div align="center">
-
 # Drift Detector
 
 Catch the moment Claude stops following your output contract — and pull it back.
 
 [![plugin-validate](https://github.com/88plug/drift-detector/actions/workflows/plugin-validate.yml/badge.svg)](https://github.com/88plug/drift-detector/actions/workflows/plugin-validate.yml)
 [![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-blue?style=flat)](LICENSE.md)
-[![Docs](https://img.shields.io/badge/docs-online-blue?style=flat)](https://88plug.github.io/drift-detector)
+[![Docs](https://img.shields.io/badge/docs-online-blue?style=flat)](https://88plug.github.io/drift-detector/)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2?style=flat)](https://github.com/88plug/claude-code-plugins)
 [![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/88plug/drift-detector)
-
-</div>
 
 Drift Detector scores every assistant turn for how far it has wandered from the
 contract you set — a terse persona, hard length/format rules, an in-character
@@ -20,7 +16,7 @@ contract. Deterministic, dependency-free, never touches your session's reliabili
 
 ## Install
 
-```bash
+```text
 /plugin marketplace add 88plug/drift-detector
 /plugin install drift-detector@drift-detector
 ```
@@ -30,6 +26,9 @@ Then enable the status-line badge (the one piece a plugin manifest can't auto-wi
 ```bash
 bash "$(/plugin path drift-detector)/install.sh"
 ```
+
+`install.sh` is idempotent. It merges the badge into `~/.claude/settings.json`,
+composes with any existing statusline, and writes a timestamped backup.
 
 ## Quickstart (under 60s)
 
@@ -73,7 +72,7 @@ nagging every turn.
 | Live badge | Status-line segment; composes with your existing statusline |
 | One-shot nudge | Next prompt gets a correction reminder only when drifted, on a cooldown — never nags |
 | Profiles | `caveman`, `strict-instructions`, `persona`, plus your own |
-| MCP tools | `drift_status`, `drift_recent`, `drift_explain` (read-only) |
+| MCP tools | `drift_status`, `drift_recent`, `drift_explain`, `drift_list_profiles`, `drift_set_profile` |
 | Commands | `/drift:status`, `report`, `profile`, `reset`, `debug` |
 
 ## Metrics
@@ -86,7 +85,7 @@ from production sessions:
 | R0 | 0.21 | Baseline |
 | R18 | 0.633 | 22-feature LR classifier |
 | R19 | 0.9543 | ExtraTree 43-feature + DCD steps=8 |
-| R20 | 0.977 | 11 new classify\_user\_reply patterns + DCD steps=10 |
+| R20 | 0.977 | 11 new classify_user_reply patterns + DCD steps=10 |
 | **R21** | **0.9973** | 17 patterns + exact-match gate + URL gate — ceiling reached |
 
 Two irreducible FNs remain: one credential provision in ok context and one bare
@@ -106,7 +105,7 @@ Two irreducible FNs remain: one credential provision in ok context and one bare
 the last assistant turn (`src/lib/drift_score.py`), persists to a WAL-mode SQLite
 index, writes the badge, and drops a marker if the turn drifted. The next
 `UserPromptSubmit` consumes that marker and injects a short correction. A
-read-only MCP server exposes the state to the model.
+read-mostly MCP server exposes the state to the model.
 
 The **point engine** answers "how bad is *this* turn?" with a single number. The
 **trajectory layer** (`src/lib/drift_trajectory.py`) treats drift as a vector:
@@ -120,6 +119,10 @@ Scoring is lexical and structural: hedges, filler, hype, and meta-narration
 combined with verbosity, length, and complexity, aggregated with a noisy-OR.
 Code blocks are stripped before scoring. Everything is pure stdlib — same text
 and profile always produce the same score.
+
+Full docs: [Algorithm](https://88plug.github.io/drift-detector/algorithm/),
+[Profiles](https://88plug.github.io/drift-detector/profiles/),
+[Eval](https://88plug.github.io/drift-detector/eval/).
 
 ## Profiles
 
