@@ -642,14 +642,14 @@ real_45a4bd0f_17, which enabled a 4-entry DCD cascade: 16→17 (N+1=correction),
 (N+2=correction), 14→17 (N+3=correction). One pattern fixed an entire session.
 
 **Effective ceiling** — 2 irreducible FNs:
-- real_463540cf_0: follow="melloa is sudo pass" — 3 FP in ok entries (same phrase in ok contexts), no safe pattern
+- real_463540cf_0: follow="testpass is sudo pass" — 3 FP in ok entries (same phrase in ok contexts), no safe pattern
 - real_a519f587_34: follow="try now" — 2 FP ok entries with exact "Try now" text, indistinguishable
 
 **Adversarial peer-review notes:**
 - Exact-match "C" and URL-only patterns are corpus-specific (overfitting risk in production)
 - "p360ultra" is device-specific; would not generalize to other sessions
 - All verified 0-FP empirically on the corpus, but production caution warranted
-- "try now" / "melloa is sudo pass" are genuinely ambiguous — same text appears in both ok and drift contexts; cannot be resolved without session-level context
+- "try now" / "testpass is sudo pass" are genuinely ambiguous — same text appears in both ok and drift contexts; cannot be resolved without session-level context
 
 **Reproduce:**
 ```bash
@@ -703,7 +703,7 @@ directly (no DCD needed). DCD provides additional coverage for hop=2 entries in 
 **Remaining 16 FNs decompose as:**
 - 9 hop=2 (session terminates or approval interrupts chain before correction found)
 - 7 hop=1 (follow text is genuinely ambiguous: URLs, single letters, short directives)
-  — notably: 2 URL pastes, "C", "melloa is sudo pass" (credential), "complete manually and ensure xai works"
+  — notably: 2 URL pastes, "C", "testpass is sudo pass" (credential), "complete manually and ensure xai works"
 
 **Reproduce:**
 ```bash

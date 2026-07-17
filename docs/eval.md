@@ -74,7 +74,7 @@ Key findings documented in `EXPERIMENTS.md`:
 | --- | --- |
 | "check again" | 4 FPs in ok entries |
 | "try now" | 2 FPs (exact "Try now" in ok context) |
-| "melloa is sudo pass" | 3 FPs (credential provision in ok context) |
+| "testpass is sudo pass" | 3 FPs (credential provision in ok context) |
 | threshold < 0.58 | FPs increase faster than TPs |
 | HGB/LGBM/softvote/ET49 | All worse than ET43 baseline |
 

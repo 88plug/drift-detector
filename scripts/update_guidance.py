@@ -22,7 +22,7 @@ Usage:
       --output /project/CLAUDE.md --dry-run
   python3 update_guidance.py --db /path/to/drift.db \\
       --recall-db ~/.claude/plugins/data/total-recall/index.db \\
-      --output /project/CLAUDE.md --cwd /home/andrew/my-project
+      --output /project/CLAUDE.md --cwd /home/operator/my-project
 """
 
 from __future__ import annotations

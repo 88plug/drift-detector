@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-ROOT := /home/andrew/drift-detector
+ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 .PHONY: test selftest validate install eval eval-synth extract-real eval-real
 
