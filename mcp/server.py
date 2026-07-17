@@ -188,7 +188,9 @@ def discover_profiles() -> List[Dict[str, Any]]:
 # --------------------------------------------------------------------------- #
 # Tool implementations
 # --------------------------------------------------------------------------- #
-def _latest_session(con: sqlite3.Connection, session_id: Optional[str]) -> Optional[str]:
+def _latest_session(
+    con: sqlite3.Connection, session_id: Optional[str]
+) -> Optional[str]:
     if session_id:
         return session_id
     row = con.execute(
@@ -199,8 +201,13 @@ def _latest_session(con: sqlite3.Connection, session_id: Optional[str]) -> Optio
 
 def tool_drift_status(args: Dict[str, Any]) -> Dict[str, Any]:
     empty = {
-        "available": False, "score": 0.0, "verdict": "ok", "turns": 0,
-        "drift_rate": 0.0, "ewma_score": 0.0, "profile": active_profile_name(),
+        "available": False,
+        "score": 0.0,
+        "verdict": "ok",
+        "turns": 0,
+        "drift_rate": 0.0,
+        "ewma_score": 0.0,
+        "profile": active_profile_name(),
     }
     con = open_ro()
     if con is None:
@@ -258,8 +265,12 @@ def tool_drift_recent(args: Dict[str, Any]) -> Dict[str, Any]:
             (sid, limit),
         ).fetchall()
         events = [
-            {"ts": r["ts"], "score": round(float(r["score"] or 0.0), 2),
-             "verdict": r["verdict"], "profile": r["profile"]}
+            {
+                "ts": r["ts"],
+                "score": round(float(r["score"] or 0.0), 2),
+                "verdict": r["verdict"],
+                "profile": r["profile"],
+            }
             for r in rows
         ]
         return {"available": True, "session_id": sid, "events": events}
@@ -289,9 +300,7 @@ def tool_drift_explain(args: Dict[str, Any]) -> Dict[str, Any]:
 
 def tool_drift_list_profiles(args: Dict[str, Any]) -> Dict[str, Any]:
     active = active_profile_name()
-    profiles = [
-        {**p, "active": p["name"] == active} for p in discover_profiles()
-    ]
+    profiles = [{**p, "active": p["name"] == active} for p in discover_profiles()]
     return {"active_profile": active, "profiles": profiles}
 
 
@@ -302,11 +311,17 @@ def tool_drift_set_profile(args: Dict[str, Any]) -> Dict[str, Any]:
     name = name.strip()
     # Reject path traversal / separators; profile names are flat slugs.
     if "/" in name or "\\" in name or name in (".", ".."):
-        return {"success": False, "reason": "invalid profile name",
-                "active_profile": active_profile_name()}
+        return {
+            "success": False,
+            "reason": "invalid profile name",
+            "active_profile": active_profile_name(),
+        }
     if resolve_profile(name) is None:
-        return {"success": False, "reason": f"unknown profile: {name}",
-                "active_profile": active_profile_name()}
+        return {
+            "success": False,
+            "reason": f"unknown profile: {name}",
+            "active_profile": active_profile_name(),
+        }
     target = active_profile_file()
     try:
         os.makedirs(os.path.dirname(target), exist_ok=True)
@@ -315,8 +330,11 @@ def tool_drift_set_profile(args: Dict[str, Any]) -> Dict[str, Any]:
             fh.write(name + "\n")
         os.replace(tmp, target)
     except OSError as exc:
-        return {"success": False, "reason": f"write failed: {exc}",
-                "active_profile": active_profile_name()}
+        return {
+            "success": False,
+            "reason": f"write failed: {exc}",
+            "active_profile": active_profile_name(),
+        }
     return {"success": True, "active_profile": name}
 
 
@@ -326,15 +344,17 @@ TOOLS = {
         "title": "Drift Status",
         "annotations": {"readOnlyHint": True},
         "description": "Current drift rollup for a session: latest score, verdict, "
-                       "turn count, drift rate, smoothed EWMA score, and active "
-                       "profile. Use when the user asks about drift or you "
-                       "suspect you've drifted from their instructions. Returns "
-                       "the live rollup object for the session.",
+        "turn count, drift rate, smoothed EWMA score, and active "
+        "profile. Use when the user asks about drift or you "
+        "suspect you've drifted from their instructions. Returns "
+        "the live rollup object for the session.",
         "schema": {
             "type": "object",
             "properties": {
-                "session_id": {"type": "string",
-                               "description": "Defaults to the most recent session."},
+                "session_id": {
+                    "type": "string",
+                    "description": "Defaults to the most recent session.",
+                },
             },
         },
     },
@@ -343,15 +363,19 @@ TOOLS = {
         "title": "Drift Recent",
         "annotations": {"readOnlyHint": True},
         "description": "List the most recent scored assistant turns (newest first). "
-                       "Use when diagnosing a drift streak or reviewing how the last "
-                       "N replies scored against the active profile. Returns each turn "
-                       "with timestamp, score, verdict, and profile name.",
+        "Use when diagnosing a drift streak or reviewing how the last "
+        "N replies scored against the active profile. Returns each turn "
+        "with timestamp, score, verdict, and profile name.",
         "schema": {
             "type": "object",
             "properties": {
                 "session_id": {"type": "string"},
-                "limit": {"type": "integer", "minimum": 1, "maximum": 50,
-                          "description": "How many turns to return (default 10)."},
+                "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "description": "How many turns to return (default 10).",
+                },
             },
         },
     },
@@ -360,14 +384,16 @@ TOOLS = {
         "title": "Drift Explain",
         "annotations": {"readOnlyHint": True},
         "description": "Score arbitrary text against a profile right now. Use when "
-                       "checking a draft reply before sending it. Returns the score, "
-                       "verdict, top drift offenders, and raw per-component breakdown.",
+        "checking a draft reply before sending it. Returns the score, "
+        "verdict, top drift offenders, and raw per-component breakdown.",
         "schema": {
             "type": "object",
             "properties": {
                 "text": {"type": "string", "description": "Text to score."},
-                "profile": {"type": "string",
-                            "description": "Profile name; defaults to the active one."},
+                "profile": {
+                    "type": "string",
+                    "description": "Profile name; defaults to the active one.",
+                },
             },
             "required": ["text"],
         },
@@ -377,25 +403,28 @@ TOOLS = {
         "title": "Drift List Profiles",
         "annotations": {"readOnlyHint": True},
         "description": "List installed drift profiles and which one is active. "
-                       "Use when choosing a profile or confirming the current "
-                       "contract before scoring. Returns name, description, "
-                       "threshold, and active=true for the selected profile.",
+        "Use when choosing a profile or confirming the current "
+        "contract before scoring. Returns name, description, "
+        "threshold, and active=true for the selected profile.",
         "schema": {"type": "object", "properties": {}},
     },
     "drift_set_profile": {
         "fn": tool_drift_set_profile,
         "title": "Drift Set Profile",
-        "annotations": {"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True},
+        "annotations": {
+            "readOnlyHint": False,
+            "destructiveHint": False,
+            "idempotentHint": True,
+        },
         "description": "Activate a drift profile by name for subsequent scoring. "
-                       "Use when the user wants a different output contract "
-                       "(e.g. switch to caveman). Returns success + the new "
-                       "active profile; persists to the active-profile file "
-                       "(idempotent if already set).",
+        "Use when the user wants a different output contract "
+        "(e.g. switch to caveman). Returns success + the new "
+        "active profile; persists to the active-profile file "
+        "(idempotent if already set).",
         "schema": {
             "type": "object",
             "properties": {
-                "name": {"type": "string",
-                         "description": "Profile name to activate."},
+                "name": {"type": "string", "description": "Profile name to activate."},
             },
             "required": ["name"],
         },
@@ -416,19 +445,25 @@ def _error(rid, code, message) -> Dict[str, Any]:
 
 def handle(req: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     if not isinstance(req, dict) or req.get("jsonrpc") != "2.0":
-        return _error(req.get("id") if isinstance(req, dict) else None,
-                      INVALID_REQUEST, "invalid JSON-RPC 2.0 request")
+        return _error(
+            req.get("id") if isinstance(req, dict) else None,
+            INVALID_REQUEST,
+            "invalid JSON-RPC 2.0 request",
+        )
 
     method = req.get("method")
     rid = req.get("id")
     params = req.get("params") or {}
 
     if method == "initialize":
-        return _result(rid, {
-            "protocolVersion": PROTOCOL_VERSION,
-            "capabilities": {"tools": {}},
-            "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
-        })
+        return _result(
+            rid,
+            {
+                "protocolVersion": PROTOCOL_VERSION,
+                "capabilities": {"tools": {}},
+                "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
+            },
+        )
 
     if method == "notifications/initialized":
         return None  # notification, no response
@@ -437,20 +472,42 @@ def handle(req: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         return _result(rid, {})
 
     if method == "tools/list":
-        return _result(rid, {
-            "tools": [
-                {"name": name, "title": spec["title"], "description": spec["description"],
-                 "inputSchema": spec["schema"], "annotations": spec["annotations"]}
-                for name, spec in TOOLS.items()
-            ]
-        })
+        return _result(
+            rid,
+            {
+                "tools": [
+                    {
+                        "name": name,
+                        "title": spec["title"],
+                        "description": spec["description"],
+                        "inputSchema": spec["schema"],
+                        "annotations": spec["annotations"],
+                    }
+                    for name, spec in TOOLS.items()
+                ]
+            },
+        )
 
     if method == "tools/call":
         name = params.get("name")
         args = params.get("arguments") or {}
+        if not isinstance(name, str):
+            return _result(
+                rid,
+                {
+                    "content": [{"type": "text", "text": f"unknown tool: {name}"}],
+                    "isError": True,
+                },
+            )
         spec = TOOLS.get(name)
         if not spec:
-            return _result(rid, {"content": [{"type": "text", "text": f"unknown tool: {name}"}], "isError": True})
+            return _result(
+                rid,
+                {
+                    "content": [{"type": "text", "text": f"unknown tool: {name}"}],
+                    "isError": True,
+                },
+            )
         try:
             payload = spec["fn"](args)
             is_error = False
@@ -460,10 +517,13 @@ def handle(req: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         except Exception as exc:  # noqa: BLE001 — never crash the server
             payload = {"error": str(exc)}
             is_error = True
-        return _result(rid, {
-            "content": [{"type": "text", "text": json.dumps(payload, indent=2)}],
-            "isError": is_error,
-        })
+        return _result(
+            rid,
+            {
+                "content": [{"type": "text", "text": json.dumps(payload, indent=2)}],
+                "isError": is_error,
+            },
+        )
 
     if rid is None:
         return None  # unknown notification — silently ignore
@@ -478,7 +538,9 @@ def main() -> int:
         try:
             req = json.loads(line)
         except json.JSONDecodeError:
-            sys.stdout.write(json.dumps(_error(None, PARSE_ERROR, "parse error")) + "\n")
+            sys.stdout.write(
+                json.dumps(_error(None, PARSE_ERROR, "parse error")) + "\n"
+            )
             sys.stdout.flush()
             continue
         resp = handle(req)
