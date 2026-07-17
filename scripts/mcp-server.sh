@@ -20,23 +20,11 @@ if [ -f "${PLUGIN_ROOT}/hooks/lib/resolve-paths.sh" ]; then
   . "${PLUGIN_ROOT}/hooks/lib/resolve-paths.sh"
 fi
 
-find_python() {
-  local p
-  for p in python3 python; do
-    if command -v "$p" >/dev/null 2>&1; then echo "$p"; return 0; fi
-  done
-  for p in /usr/bin/python3 /usr/local/bin/python3 /opt/homebrew/bin/python3; do
-    if [ -x "$p" ]; then echo "$p"; return 0; fi
-  done
-  return 1
-}
-
-PY="$(find_python)" || { echo "drift-detector: no python interpreter found" >&2; exit 1; }
-
 # Make the scoring engine importable by mcp/server.py (drift_explain needs it).
 export PYTHONPATH="${PLUGIN_ROOT}/src/lib${PYTHONPATH:+:${PYTHONPATH}}"
 
 # Hand the resolved DB path to the server so it opens the right file read-only.
 export DD_DB="${DD_DB:-${DD_DATA_ROOT:-${PLUGIN_ROOT}}/drift.db}"
 
-exec "${PY}" "${SERVER}"
+# Shared fleet resolver (env override → venv → PATH → abs Homebrew/system).
+exec bash "${PLUGIN_ROOT}/scripts/run-python.sh" "${SERVER}"

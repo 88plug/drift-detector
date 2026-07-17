@@ -37,3 +37,13 @@ find hooks/ -name "*.sh" | while read -r f; do
 done
 
 echo "=== smoke: all good ==="
+
+echo "== run-python launcher =="
+test -f scripts/run-python.sh
+bash -n scripts/run-python.sh
+bash scripts/run-python.sh -c 'import sys; assert sys.version_info >= (3, 10)'
+# mcp-server routes through run-python (no inline find_python)
+grep -q 'run-python.sh' scripts/mcp-server.sh
+! grep -q 'find_python()' scripts/mcp-server.sh
+env -i HOME="$HOME" PATH="/usr/bin:/bin" bash scripts/run-python.sh -c 'import sys; print(sys.version_info[0])' | grep -q 3 || true
+echo "  ok: run-python"

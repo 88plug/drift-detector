@@ -75,10 +75,23 @@ DD_CONTROL_PY="${CLAUDE_PLUGIN_ROOT}/scripts/control.py"
 DD_SCHEMA_SQL="${CLAUDE_PLUGIN_ROOT}/scripts/schema.sql"
 
 # --- Python discovery ------------------------------------------------------ #
+# Prefer scripts/run-python.sh (thin Claude PATH / Homebrew-safe). Returns an
+# absolute interpreter path suitable for "${PY}" -c / script invocation.
 dd_python() {
-  if command -v python3 >/dev/null 2>&1; then echo python3
-  elif command -v python >/dev/null 2>&1; then echo python
-  else return 1; fi
+  local root runner py
+  root="${CLAUDE_PLUGIN_ROOT:-}"
+  if [ -z "$root" ]; then
+    # resolve-paths.sh lives at hooks/lib/ — walk up to plugin root
+    root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." 2>/dev/null && pwd)"
+  fi
+  runner="${root}/scripts/run-python.sh"
+  if [ -f "$runner" ]; then
+    py="$(bash "$runner" -c 'import sys; print(sys.executable)' 2>/dev/null)" || return 1
+    [ -n "$py" ] && { printf '%s' "$py"; return 0; }
+  fi
+  if command -v python3 >/dev/null 2>&1; then echo python3; return 0; fi
+  if command -v python >/dev/null 2>&1; then echo python; return 0; fi
+  return 1
 }
 
 # --- Session slug ---------------------------------------------------------- #
@@ -126,8 +139,10 @@ dd_log_debug() {
   mkdir -p "${DD_LOGS_DIR}" 2>/dev/null || true
   local ts
   ts="$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo unknown)"
+  local _py
+  _py="$(dd_python 2>/dev/null || true)"
   printf '{"ts":"%s","hook":"%s","msg":%s}\n' \
-    "${ts}" "${DD_HOOK_NAME:-?}" "$(printf '%s' "${1:-}" | python3 -c 'import json,sys;print(json.dumps(sys.stdin.read()))' 2>/dev/null || printf '"%s"' "${1:-}")" \
+    "${ts}" "${DD_HOOK_NAME:-?}" "$(printf '%s' "${1:-}" | ${_py:-false} -c 'import json,sys;print(json.dumps(sys.stdin.read()))' 2>/dev/null || printf '"%s"' "${1:-}")" \
     >> "${DD_LOGS_DIR}/debug.jsonl" 2>/dev/null || true
 }
 
