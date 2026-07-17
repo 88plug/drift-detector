@@ -341,8 +341,10 @@ TOOLS = {
         "fn": tool_drift_recent,
         "title": "Drift Recent",
         "annotations": {"readOnlyHint": True},
-        "description": "The most recent scored assistant turns (newest first), each "
-                       "with timestamp, score, verdict, and profile.",
+        "description": "List the most recent scored assistant turns (newest first). "
+                       "Use when diagnosing a drift streak or reviewing how the last "
+                       "N replies scored against the active profile. Returns each turn "
+                       "with timestamp, score, verdict, and profile name.",
         "schema": {
             "type": "object",
             "properties": {
@@ -374,16 +376,21 @@ TOOLS = {
         "fn": tool_drift_list_profiles,
         "title": "Drift List Profiles",
         "annotations": {"readOnlyHint": True},
-        "description": "List available drift profiles (name, description, threshold) "
-                       "and flag which one is currently active.",
+        "description": "List installed drift profiles and which one is active. "
+                       "Use when choosing a profile or confirming the current "
+                       "contract before scoring. Returns name, description, "
+                       "threshold, and active=true for the selected profile.",
         "schema": {"type": "object", "properties": {}},
     },
     "drift_set_profile": {
         "fn": tool_drift_set_profile,
         "title": "Drift Set Profile",
         "annotations": {"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True},
-        "description": "Set the active drift profile by name. Persists to the "
-                       "active-profile file so subsequent turns are scored with it.",
+        "description": "Activate a drift profile by name for subsequent scoring. "
+                       "Use when the user wants a different output contract "
+                       "(e.g. switch to caveman). Returns success + the new "
+                       "active profile; persists to the active-profile file "
+                       "(idempotent if already set).",
         "schema": {
             "type": "object",
             "properties": {
