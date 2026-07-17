@@ -16,7 +16,7 @@ anti-drift block based on what patterns actually fire most in real sessions.
 
 2. Check if enough signal exists (at least 5 drifted turns):
    ```bash
-   python3 -c "
+   bash "${CLAUDE_PLUGIN_ROOT}/scripts/run-python.sh" -c "
    import sqlite3
    con = sqlite3.connect(f'file:${DB}?mode=ro', uri=True)
    n = con.execute('SELECT SUM(drift_turns) FROM sessions').fetchone()[0] or 0
@@ -27,7 +27,7 @@ anti-drift block based on what patterns actually fire most in real sessions.
 
 3. Run calibration against this project's CLAUDE.md:
    ```bash
-   python3 "${CLAUDE_PLUGIN_ROOT}/scripts/update_guidance.py" \
+   bash "${CLAUDE_PLUGIN_ROOT}/scripts/run-python.sh" "${CLAUDE_PLUGIN_ROOT}/scripts/update_guidance.py" \
      --db "$DB" \
      --output "${CLAUDE_PROJECT_DIR}/CLAUDE.md" \
      --sessions 50

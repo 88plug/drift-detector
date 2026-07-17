@@ -1,7 +1,7 @@
 ---
-description: Reset drift state — /drift:reset [session | all].
+description: Reset drift state — /drift-detector:reset [session | all].
 argument-hint: "[session|all]"
-allowed-tools: Bash(python3:*), Bash(rm:*), Bash(printf:*)
+allowed-tools: Bash(bash:*), Bash(/scripts/run-python.sh:*), Bash(rm:*), Bash(printf:*)
 ---
 
 Reset drift state. Argument: `$ARGUMENTS` (default: `session`).

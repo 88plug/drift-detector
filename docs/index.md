@@ -113,11 +113,11 @@ touches the DB.
 
 | Command | What it does |
 | --- | --- |
-| `/drift:status` | Live score, verdict, drift rate, trend |
-| `/drift:report` | Per-turn history and dominant offenders |
-| `/drift:profile` | Switch or inspect (`name`, `list`, `show`) |
-| `/drift:reset` | Clear live state (`session` or `all`) |
-| `/drift:debug` | Toggle structured hook logging (`on` / `off`) |
+| `/drift-detector:status` | Live score, verdict, drift rate, trend |
+| `/drift-detector:report` | Per-turn history and dominant offenders |
+| `/drift-detector:profile` | Switch or inspect (`name`, `list`, `show`) |
+| `/drift-detector:reset` | Clear live state (`session` or `all`) |
+| `/drift-detector:debug` | Toggle structured hook logging (`on` / `off`) |
 
 ## Features
 

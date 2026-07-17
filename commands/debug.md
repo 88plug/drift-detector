@@ -1,5 +1,5 @@
 ---
-description: Toggle drift-detector debug logging — /drift:debug [on | off].
+description: Toggle drift-detector debug logging — /drift-detector:debug [on | off].
 argument-hint: "[on|off]"
 allowed-tools: Bash(touch:*), Bash(rm:*), Bash(ls:*), Bash(tail:*)
 ---

@@ -1,6 +1,6 @@
 ---
 description: Show the current drift status for this session (live score, trend, drift rate).
-allowed-tools: Bash(python3:*), Bash(bash:*), mcp__drift-detector__drift_status, mcp__drift-detector__drift_recent
+allowed-tools: Bash(bash:*), Bash(/scripts/run-python.sh:*), Bash(bash:*), mcp__drift-detector__drift_status, mcp__drift-detector__drift_recent
 ---
 
 Report the current drift status concisely.

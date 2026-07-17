@@ -1,7 +1,7 @@
 ---
-description: Manage the active drift profile — /drift:profile [name | list | show].
+description: Manage the active drift profile — /drift-detector:profile [name | list | show].
 argument-hint: "[name|list|show]"
-allowed-tools: Bash(python3:*), Bash(bash:*), Bash(cat:*), Bash(printf:*)
+allowed-tools: Bash(bash:*), Bash(cat:*), Bash(printf:*)
 ---
 
 Manage drift profiles. The argument is: `$ARGUMENTS`
@@ -16,7 +16,7 @@ ACTIVE_FILE="$DATA/active-profile"
 
 Behavior by argument:
 - `list` (or empty): run
-  `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/profiles.py" list --user-dir "$DATA/profiles" --bundled-dir "$BUNDLED"`
+  `bash "${CLAUDE_PLUGIN_ROOT}/scripts/run-python.sh" "${CLAUDE_PLUGIN_ROOT}/scripts/profiles.py" list --user-dir "$DATA/profiles" --bundled-dir "$BUNDLED"`
   and present the available profiles, marking the active one.
 - `show`: print the active profile name (`cat "$ACTIVE_FILE"`) and run
   `profiles.py show --name <active> ...` to display its resolved config.

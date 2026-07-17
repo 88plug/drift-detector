@@ -36,7 +36,7 @@ Set a contract, work for a few turns, then check drift:
 
 ```text
 > from now on answer in caveman style: terse, no preamble, no hedging
-> /drift:status
+> /drift-detector:status
 ```
 
 You'll see a live score and verdict, e.g. `caveman | 12% | ok`. When a reply
@@ -68,12 +68,12 @@ nagging every turn.
 | Morin trajectory | Scores drift as a vector — velocity and trend, not just level — so a self-correcting blip is tolerated and a slow climb is caught |
 | Repeating-spike detection | Flags an oscillating relapse that looks adaptive turn-by-turn but is degenerative as a cycle |
 | DCD pipeline | Deferred Correction Detection: scans N+1…N+10 for user correction follow-ups, improving recall on delayed feedback |
-| ExtraTree classifier | ML stage (n=500, GroupKFold/5, t=0.58) stacked on the rule engine — catches patterns rules miss |
+| Rule + DCD scoring | Stop-hook runtime: rule engine + drift-control detector (ExtraTree lives in *eval* scripts only, not the live hook) |
 | Live badge | Status-line segment; composes with your existing statusline |
 | One-shot nudge | Next prompt gets a correction reminder only when drifted, on a cooldown — never nags |
 | Profiles | `caveman`, `strict-instructions`, `persona`, plus your own |
 | MCP tools | `drift_status`, `drift_recent`, `drift_explain`, `drift_list_profiles`, `drift_set_profile` |
-| Commands | `/drift:status`, `report`, `profile`, `reset`, `debug` |
+| Commands | `/drift-detector:status`, `report`, `profile`, `reset`, `debug`, `calibrate` |
 
 ## Metrics
 
@@ -93,11 +93,11 @@ Two irreducible FNs remain: one credential provision in ok context and one bare
 
 ## Commands
 
-- `/drift:status` — live score, verdict, drift rate, trend.
-- `/drift:report` — per-turn history plus the dominant offenders.
-- `/drift:profile [name|list|show]` — switch or inspect the active profile.
-- `/drift:reset [session|all]` — clear live state (or the rebuildable index).
-- `/drift:debug [on|off]` — toggle structured hook logging.
+- `/drift-detector:status` — live score, verdict, drift rate, trend.
+- `/drift-detector:report` — per-turn history plus the dominant offenders.
+- `/drift-detector:profile [name|list|show]` — switch or inspect the active profile.
+- `/drift-detector:reset [session|all]` — clear live state (or the rebuildable index).
+- `/drift-detector:debug [on|off]` — toggle structured hook logging.
 
 ## How it works
 
@@ -109,7 +109,7 @@ read-mostly MCP server exposes the state to the model.
 
 The **point engine** answers "how bad is *this* turn?" with a single number. The
 **trajectory layer** (`src/lib/drift_trajectory.py`) treats drift as a vector:
-velocity, plateau detection, repeating-spike cycle detection. The **ExtraTree
+velocity, plateau detection, repeating-spike cycle detection. **Eval-only** ExtraTree
 classifier** (`scripts/backtest_real.py`) stacks on top for the real-corpus eval.
 The **DCD pipeline** (Deferred Correction Detection) scans the 10 turns following
 a candidate for user correction signals, recovering cases where drift feedback is
@@ -128,7 +128,7 @@ Full docs: [Algorithm](https://88plug.github.io/drift-detector/algorithm/),
 
 A profile is the contract plus how to score deviation from it: a `threshold`, a
 `sensitivity`, per-class lexicon weights, and verbosity/length calibration. Ship
-your own as a JSON file and switch with `/drift:profile`. See
+your own as a JSON file and switch with `/drift-detector:profile`. See
 `skills/drift-detector/references/profile-authoring.md` for the full schema and
 `skills/drift-detector/references/scoring-internals.md` for the scoring math.
 

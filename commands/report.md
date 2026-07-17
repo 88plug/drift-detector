@@ -1,6 +1,6 @@
 ---
 description: Detailed drift report for this session — recent turns, offenders, and trend.
-allowed-tools: mcp__drift-detector__drift_status, mcp__drift-detector__drift_recent, mcp__drift-detector__drift_explain, Bash(python3:*)
+allowed-tools: mcp__drift-detector__drift_status, mcp__drift-detector__drift_recent, mcp__drift-detector__drift_explain, Bash(bash:*), Bash(/scripts/run-python.sh:*)
 ---
 
 Produce a drift report for the current session.
