@@ -11,7 +11,7 @@ A user profile may declare  "extends": "<name>"  to inherit a bundled profile
 and override only some fields (deep-merged). `sensitivity` is applied by the
 scoring engine, not here — this module only validates/normalizes it.
 
-Used by the /drift:profile command and (indirectly) by score.py via the JSON
+Used by the /drift-detector:profile command and (indirectly) by score.py via the JSON
 file it loads. Kept dependency-free.
 """
 

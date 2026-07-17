@@ -138,7 +138,7 @@ your own as a JSON file and switch with `/drift-detector:profile`. See
 make selftest    # engine self-test
 make test        # pytest suite
 make validate    # full plugin CI gate (66 checks)
-python3 scripts/adversarial_classify_test.py   # 37-case adversarial unit test
+bash scripts/run-python.sh scripts/adversarial_classify_test.py   # 37-case adversarial unit test
 ```
 
 See `EXPERIMENTS.md` for the 21-round tuning ledger and `IMPLEMENTATION_NOTES.md`

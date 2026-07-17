@@ -14,7 +14,7 @@ user's active output contract and exposes that state to you.
   "you forgot the format", "what happened to caveman mode".
 - You are many turns into a session that began with a strict style instruction
   and want to self-check before replying.
-- The user runs `/drift:status` or `/drift:report` (those commands drive you).
+- The user runs `/drift-detector:status` or `/drift-detector:report` (those commands drive you).
 
 ## How to consult
 
@@ -36,7 +36,7 @@ If recent turns are drifting, correct course in your NEXT reply: drop preamble,
 hedging, filler, and marketing phrasing; honor the explicit constraints; match
 the persona. Do not announce that you consulted the detector or apologize at
 length — just tighten up. If the user wants the contract changed, point them to
-`/drift:profile`.
+`/drift-detector:profile`.
 
 See `references/scoring-internals.md` for how the score is computed and
 `references/profile-authoring.md` for writing a custom profile.

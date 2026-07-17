@@ -16,19 +16,19 @@ the sensitivity, per-component weights, and custom lexicons.
 Switch with:
 
 ```text
-/drift:profile caveman
+/drift-detector:profile caveman
 ```
 
 Inspect the active profile:
 
 ```text
-/drift:profile show
+/drift-detector:profile show
 ```
 
 List all available:
 
 ```text
-/drift:profile list
+/drift-detector:profile list
 ```
 
 ## Authoring a custom profile
@@ -93,14 +93,14 @@ entries match as phrases; single tokens match whole words.
 ### Validate
 
 ```bash
-python3 scripts/profiles.py validate --name my-terse \
+bash scripts/run-python.sh scripts/profiles.py validate --name my-terse \
   --user-dir "$CLAUDE_PLUGIN_DATA/profiles" --bundled-dir profiles
 ```
 
 ### Activate
 
 ```text
-/drift:profile my-terse
+/drift-detector:profile my-terse
 ```
 
 Writes the profile name to `$CLAUDE_PLUGIN_DATA/active-profile`. Persists across

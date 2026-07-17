@@ -78,7 +78,7 @@ worse; `verdict` flips to `drift` at the profile threshold.
   `hooks/lib/resolve-paths.sh` resolves these with a glob fallback.
 - **WAL + read-only MCP.** The Stop-hook writer and the MCP reader never block
   each other; the DB is rebuildable from transcripts (`score.py --rebuild`), so
-  `/drift:reset all` is safe.
+  `/drift-detector:reset all` is safe.
 - **Badge is dumb and tiny.** The status line does a single file read + printf —
   no python, no DB — so it stays cheap on every render, and composes with a
   pre-existing statusline.

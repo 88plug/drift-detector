@@ -39,7 +39,7 @@ Set a contract, work a few turns, then check drift:
 
 ```text
 > from now on answer in caveman style: terse, no preamble, no hedging
-> /drift:status
+> /drift-detector:status
 ```
 
 You should see something like `caveman | 12% | ok`. When a reply relapses into
@@ -85,13 +85,13 @@ sensitivity, per-class weights, and verbosity/length calibration.
 | `relaxed` | 75 | Only extreme drift flagged |
 
 ```text
-/drift:profile list
-/drift:profile caveman
-/drift:profile show
+/drift-detector:profile list
+/drift-detector:profile caveman
+/drift-detector:profile show
 ```
 
 Ship your own as JSON under `$CLAUDE_PLUGIN_DATA/profiles/` and switch with
-`/drift:profile <name>`. Full schema and authoring guide: [Profiles](profiles.md).
+`/drift-detector:profile <name>`. Full schema and authoring guide: [Profiles](profiles.md).
 
 ## MCP tools
 
@@ -130,9 +130,9 @@ touches the DB.
 | Morin trajectory | Adaptive vs degenerative, velocity, chronic subclinical |
 | Repeating-spike detection | Catches relapsing alternating patterns |
 | DCD pipeline | Deferred Correction Detection: scans N+1…N+10 for delayed feedback |
-| ExtraTree classifier | ML stage stacked on rules (GroupKFold/5, t=0.58) |
+| Rule + DCD scoring | Stop-hook runtime: rule engine + drift-control detector (ExtraTree is *eval*-only) |
 | MCP tools | Five tools for status, history, explain, profiles |
-| Commands | status, report, profile, reset, debug |
+| Commands | status, report, profile, reset, debug, calibrate |
 
 ## How it works
 
@@ -143,7 +143,7 @@ and injects a correction only when drift is degenerative.
 
 The scoring engine is pure stdlib: no network, no third-party deps. Same text and
 profile always produce the same score. Full pipeline (point engine, trajectory,
-ExtraTree + DCD): [Algorithm](algorithm.md).
+eval-only ExtraTree + DCD): [Algorithm](algorithm.md).
 
 ## Metrics
 
@@ -166,7 +166,7 @@ Precision = 1.000 (fp=0). Full campaign: [Eval & Tuning](eval.md).
 make selftest    # engine self-test
 make test        # pytest suite
 make validate    # full plugin CI gate
-python3 scripts/adversarial_classify_test.py   # 37-case adversarial unit test
+bash scripts/run-python.sh scripts/adversarial_classify_test.py   # 37-case adversarial unit test
 ```
 
 ## License

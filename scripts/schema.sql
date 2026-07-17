@@ -33,7 +33,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_scores_dedupe
     ON scores(session_id, transcript_hash)
     WHERE transcript_hash IS NOT NULL;
 
--- Per-session rollup, maintained by score.py on each insert. Lets /drift:status
+-- Per-session rollup, maintained by score.py on each insert. Lets /drift-detector:status
 -- and the statusline answer in O(1) without scanning every turn.
 CREATE TABLE IF NOT EXISTS sessions (
     session_id   TEXT PRIMARY KEY,

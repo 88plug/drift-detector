@@ -26,13 +26,13 @@ was never broken.
 ## Reproduce
 
 ```bash
-python3 scripts/backtest_real.py --dcd --dcd-steps 10
+bash scripts/run-python.sh scripts/backtest_real.py --dcd --dcd-steps 10
 # Expected: F1=0.9973 tp=375 fp=0 fn=2 tn=906
 
-python3 scripts/eval_morin.py
+bash scripts/run-python.sh scripts/eval_morin.py
 # Expected: n=190 acc=1.0 FP=0.0 FN=0.0
 
-python3 scripts/adversarial_classify_test.py
+bash scripts/run-python.sh scripts/adversarial_classify_test.py
 # Expected: PASS=37 FAIL=0
 ```
 

@@ -36,11 +36,11 @@ what differs.
 ## Validate
 
 ```bash
-python3 scripts/profiles.py validate --name my-terse \
+bash scripts/run-python.sh scripts/profiles.py validate --name my-terse \
   --user-dir "$CLAUDE_PLUGIN_DATA/profiles" --bundled-dir profiles
 ```
 
 ## Activate
 
-Set the active profile with `/drift:profile my-terse` (writes the name to
+Set the active profile with `/drift-detector:profile my-terse` (writes the name to
 `$CLAUDE_PLUGIN_DATA/active-profile`).
