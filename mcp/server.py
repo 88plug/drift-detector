@@ -19,8 +19,8 @@ Tools exposed:
 
 Paths:
   CLAUDE_CONFIG_DIR  — user config root (default ~/.claude)
-  CLAUDE_PLUGIN_DATA — writable data root; else
-                       <config>/plugins/data/drift-detector-88plug
+  GROK_PLUGIN_DATA / CLAUDE_PLUGIN_DATA — writable data root (Grok first);
+                       else <config>/plugins/data/drift-detector-88plug
   DD_DB              — explicit DB path override (set by mcp-server.sh)
 """
 
@@ -65,7 +65,10 @@ def config_dir() -> str:
 
 
 def data_root() -> str:
-    explicit = os.environ.get("CLAUDE_PLUGIN_DATA")
+    # Grok first (sets GROK_PLUGIN_DATA; may omit CLAUDE alias on some builds).
+    explicit = os.environ.get("GROK_PLUGIN_DATA") or os.environ.get(
+        "CLAUDE_PLUGIN_DATA"
+    )
     if explicit:
         return explicit
     return os.path.join(config_dir(), "plugins", "data", PLUGIN_SLUG)

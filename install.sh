@@ -119,7 +119,7 @@ RESULT=$?
 
 # Seed writable data tree + bundled profiles for immediate use.
 if [ "${UNINSTALL}" = "0" ]; then
-  DATA_ROOT="${CLAUDE_PLUGIN_DATA:-${CONFIG_DIR}/plugins/data/drift-detector-88plug}"
+  DATA_ROOT="${GROK_PLUGIN_DATA:-${CLAUDE_PLUGIN_DATA:-${CONFIG_DIR}/plugins/data/drift-detector-88plug}}"
   mkdir -p "${DATA_ROOT}/profiles" "${DATA_ROOT}/markers" "${DATA_ROOT}/logs/archive" 2>/dev/null || true
   [ -f "${DATA_ROOT}/active-profile" ] || printf 'caveman' > "${DATA_ROOT}/active-profile"
   [ -f "${CONFIG_DIR}/.drift-state" ] || printf 'ok|0' > "${CONFIG_DIR}/.drift-state"
