@@ -1,5 +1,5 @@
 site_name: Drift Detector
-site_description: A Claude Code plugin that scores every assistant turn for behavioral drift from your active output contract and steers it back automatically.
+site_description: 'Claude Code drift detection plugin — scores every assistant turn against your output contract and steers the LLM back when instruction-following erodes.'
 site_url: https://88plug.github.io/drift-detector/
 repo_url: https://github.com/88plug/drift-detector
 repo_name: 88plug/drift-detector

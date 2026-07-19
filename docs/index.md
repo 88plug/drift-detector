@@ -99,7 +99,7 @@ sensitivity, per-class weights, and verbosity/length calibration.
 ```
 
 Ship your own as JSON under `$CLAUDE_PLUGIN_DATA/profiles/` and switch with
-`/drift-detector:profile <name>`. Full schema and authoring guide: [Profiles](profiles.md).
+`/drift-detector:profile <name>`. Full schema and authoring guide: [Profiles](https://github.com/88plug/drift-detector/blob/main/profiles.md).
 
 ## MCP tools
 
@@ -151,7 +151,7 @@ and injects a correction only when drift is degenerative.
 
 The scoring engine is pure stdlib: no network, no third-party deps. Same text and
 profile always produce the same score. Full pipeline (point engine, trajectory,
-eval-only ExtraTree + DCD): [Algorithm](algorithm.md).
+eval-only ExtraTree + DCD): [Algorithm](https://github.com/88plug/drift-detector/blob/main/algorithm.md).
 
 ## Metrics
 
@@ -166,7 +166,7 @@ Tuned through 21 scientific-method rounds on a 1,283-entry real corpus:
 | **R21** | **0.9973** | 17 patterns + exact-match gate + URL gate |
 
 Two irreducible FNs remain (credential provision in ok context; bare "Try now").
-Precision = 1.000 (fp=0). Full campaign: [Eval & Tuning](eval.md).
+Precision = 1.000 (fp=0). Full campaign: [Eval & Tuning](https://github.com/88plug/drift-detector/blob/main/eval.md).
 
 ## Development
 
