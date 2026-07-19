@@ -23,6 +23,14 @@ Built for AI agents, productivity workflows, and automation where instruction-fo
 /plugin install drift-detector@88plug
 ```
 
+### Grok Build
+
+```text
+grok plugin marketplace add 88plug/claude-code-plugins
+grok plugin install drift-detector@88plug --trust
+```
+
+
 Then enable the status-line badge (the one piece a plugin manifest can't auto-wire):
 
 ```bash

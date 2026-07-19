@@ -20,6 +20,14 @@ contract. Deterministic, dependency-free, never touches session reliability.
 /plugin install drift-detector@88plug
 ```
 
+### Grok Build
+
+```text
+grok plugin marketplace add 88plug/claude-code-plugins
+grok plugin install drift-detector@88plug --trust
+```
+
+
 Then wire the status-line badge (the one piece a plugin manifest cannot auto-install):
 
 ```bash
