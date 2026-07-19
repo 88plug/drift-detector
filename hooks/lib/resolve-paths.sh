@@ -28,12 +28,13 @@ if [ -z "${CLAUDE_PLUGIN_ROOT:-}" ]; then
 fi
 
 # --- Writable data root ---------------------------------------------------- #
-# Prefer an explicit $CLAUDE_PLUGIN_DATA. Otherwise use the documented location;
-# if that exact dir is missing, glob for any drift-detector* data dir so a
-# renamed marketplace slug still resolves before we give up and create default.
+# Prefer harness data dir: GROK_PLUGIN_DATA (Grok) or CLAUDE_PLUGIN_DATA (Claude).
+# Otherwise use the documented location; if that exact dir is missing, glob for
+# any drift-detector* data dir so a renamed marketplace slug still resolves.
 dd_resolve_data_root() {
-  if [ -n "${CLAUDE_PLUGIN_DATA:-}" ]; then
-    printf '%s\n' "${CLAUDE_PLUGIN_DATA}"
+  local data="${GROK_PLUGIN_DATA:-${CLAUDE_PLUGIN_DATA:-}}"
+  if [ -n "$data" ]; then
+    printf '%s\n' "$data"
     return 0
   fi
   local base="${CLAUDE_CONFIG_DIR}/plugins/data"
