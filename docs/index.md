@@ -1,6 +1,6 @@
 # Drift Detector
 
-Catch the moment Claude stops following your output contract — and pull it back.
+**Claude Code + Grok drift detection plugin** — scores every assistant turn against your output contract and steers the LLM back when instruction-following erodes.
 
 [![plugin-validate](https://github.com/88plug/drift-detector/actions/workflows/plugin-validate.yml/badge.svg)](https://github.com/88plug/drift-detector/actions/workflows/plugin-validate.yml)
 [![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-blue?style=flat)](https://github.com/88plug/drift-detector/blob/main/LICENSE)
@@ -15,6 +15,8 @@ contract. Deterministic, dependency-free, never touches session reliability.
 
 ## Install
 
+### Claude Code
+
 ```text
 /plugin marketplace add 88plug/claude-code-plugins
 /plugin install drift-detector@88plug
@@ -26,7 +28,6 @@ contract. Deterministic, dependency-free, never touches session reliability.
 grok plugin marketplace add 88plug/claude-code-plugins
 grok plugin install drift-detector@88plug --trust
 ```
-
 
 Then wire the status-line badge (the one piece a plugin manifest cannot auto-install):
 
