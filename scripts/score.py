@@ -7,8 +7,7 @@ This is the glue the Stop hook calls. It:
   2. Loads the active profile and scores the turn with the drift_score engine.
   3. Persists the result to the WAL-mode SQLite index and updates the
      per-session rollup.
-  4. Emits a compact badge line ("state|pct") on stdout for the statusline, and
-     a richer JSON record on fd 3 if open (so the hook can log it).
+  4. Emits a compact badge line ("state|pct") on stdout for the statusline.
 
 Determinism + safety: same transcript + profile => same row. A per-turn hash
 dedupes re-scoring if the Stop hook fires twice for one turn. Everything is
@@ -458,12 +457,10 @@ def main(argv=None) -> int:
             )
         )
 
-    # Rich record to fd 3 if the caller opened it.
-    try:
-        with os.fdopen(3, "w") as fh3:
-            json.dump(result_out, fh3)
-    except OSError:
-        pass
+    # Do not write the score JSON to fd 3. sqlite opens drift.db on the first
+    # free descriptor, which is fd 3 when the hook's stdin/stdout/stderr are
+    # 0/1/2, and a parent can also inherit fd 3 onto that same file. Opening
+    # it "w" overwrites the database header and the index stops being SQLite.
     return 0
 
 

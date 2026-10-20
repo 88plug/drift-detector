@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Stop writing the score JSON to fd 3. That descriptor is often the open
+  SQLite file, so the write replaced the database header and `drift_status`
+  failed with "file is not a database". The hook never read fd 3.
+
 ## 2026.6.23
 
 - Real-corpus eval campaign (21 rounds): **F1=0.9973**, precision=1.0000, recall=0.9947
